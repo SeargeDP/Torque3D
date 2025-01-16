@@ -1541,6 +1541,10 @@ void PersistenceManager::updateObject(SimObject* object, ParsedObject* parentObj
 
                      newLines.push_back(createNewProperty(f->pFieldname, cmdBuf, f->elementCount > 1, j));
                   }
+                  else if (f->flag.test(AbstractClassRep::FIELD_SpecialtyArrayField))
+                  {
+                     newLines.push_back(value);
+                  }
                   else
                      newLines.push_back(createNewProperty(f->pFieldname, value, f->elementCount > 1, j));
                }
