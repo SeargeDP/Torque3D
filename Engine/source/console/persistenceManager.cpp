@@ -1433,29 +1433,7 @@ void PersistenceManager::updateObject(SimObject* object, ParsedObject* parentObj
                   }
                   else
                   {
-                     // TODO: This should be wrapped in a helper method... probably.
-                     // Detect and collapse relative path information
-                     if (f->type == TypeFilename ||
-                        f->type == TypeStringFilename ||
-                        f->type == TypeImageFilename ||
-                        f->type == TypePrefabFilename ||
-                        f->type == TypeShapeFilename ||
-                        f->type == TypeSoundFilename)
-                     {
-                        char fnBuf[1024];
-                        Con::collapseScriptFilename(fnBuf, 1024, value);
-
-                        updateToken(prop.valueLine, prop.valuePosition, prop.endPosition - prop.valuePosition, fnBuf, true);
-                     }
-                     else if (f->type == TypeCommand || f->type == TypeString || f->type == TypeRealString)
-                     {
-                        char cmdBuf[1024];
-                        expandEscape(cmdBuf, value);
-
-                        updateToken(prop.valueLine, prop.valuePosition, prop.endPosition - prop.valuePosition, cmdBuf, true);
-                     }
-                     else
-                        updateToken(prop.valueLine, prop.valuePosition, prop.endPosition - prop.valuePosition, value, true);
+                     updateToken(prop.valueLine, prop.valuePosition, prop.endPosition - prop.valuePosition, value, true);
                   }
                }
             }
@@ -1520,29 +1498,7 @@ void PersistenceManager::updateObject(SimObject* object, ParsedObject* parentObj
                // value then add it to the ParsedObject's newLines                        
                if (mustUpdate)
                {
-                  // TODO: This should be wrapped in a helper method... probably.
-                  // Detect and collapse relative path information
-                  if (f->type == TypeFilename ||
-                     f->type == TypeStringFilename ||
-                     f->type == TypeImageFilename ||
-                     f->type == TypePrefabFilename ||
-                     f->type == TypeShapeFilename ||
-                     f->type == TypeSoundFilename)
-                  {
-                     char fnBuf[1024];
-                     Con::collapseScriptFilename(fnBuf, 1024, value);
-
-                     newLines.push_back(createNewProperty(f->pFieldname, fnBuf, f->elementCount > 1, j));
-                  }
-                  else if (f->type == TypeCommand)
-                  {
-                     char cmdBuf[1024];
-                     expandEscape(cmdBuf, value);
-
-                     newLines.push_back(createNewProperty(f->pFieldname, cmdBuf, f->elementCount > 1, j));
-                  }
-                  else
-                     newLines.push_back(createNewProperty(f->pFieldname, value, f->elementCount > 1, j));
+                  newLines.push_back(String::String(value).c_str());
                }
 
                if (defaultValue)
@@ -1858,11 +1814,11 @@ void PersistenceManager::updateObject(SimObject* object, ParsedObject* parentObj
    // Clean up the newLines memory
    for (U32 i = 0; i < newLines.size(); i++)
    {
-      if (newLines[i])
-      {
+      if (!isEmptyLine(newLines[i]) && !StringTable->lookup(newLines[i]))
+      {//don't try killing empty lines or lines that are in the string table
          dFree(newLines[i]);
-         newLines[ i ] = NULL;
       }
+      newLines[ i ] = NULL;
    }
 
    newLines.clear();
