@@ -57,7 +57,7 @@ void main()
    Surface surface = createSurface(normDepth, colorBuffer, matInfoBuffer, IN_uv0.xy, eyePosWorld, IN_wsEyeRay, cameraToWorld);
    if (getFlag(surface.matFlag, 2))
    { 
-      OUT_col = surface.baseColor;
+      OUT_col = vec4(0,0,0,0);
       return;
    } 
    #ifdef USE_SSAO_MASK
