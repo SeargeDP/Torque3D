@@ -394,7 +394,8 @@ void dampen(inout Surface surface, sampler2D WetnessTexture, float accumTime, fl
    if (degree<=0.0) return;
    vec3 n = abs(surface.N);
 
-   float grav = 2.0-pow(dot(float3(0,0,-1),surface.N),3);
+   float ang = dot(float3(0,0,-1),surface.N);
+   float grav = 2.0-pow(ang,3);
    if (grav<0) grav*=-1.0;
    
    float speed = accumTime*(1.0-surface.roughness)*grav;
@@ -405,8 +406,8 @@ void dampen(inout Surface surface, sampler2D WetnessTexture, float accumTime, fl
    wetness = lerp(wetness,texture(WetnessTexture,vec2(surface.P.zy*0.2+wetoffset)).b,n.x);
    wetness = pow(wetness,3)*degree;
    
-   surface.roughness = lerp(surface.roughness,(1.0-pow(wetness,2))*surface.roughness*0.92f+0.04f,degree);
-   surface.baseColor.rgb = lerp(surface.baseColor.rgb,surface.baseColor.rgb*(2.0-wetness)/2,degree); 
+   surface.roughness = lerp(surface.roughness,(1.0-wetness*surface.roughness)*0.92f+0.04f,ang);
+   surface.baseColor.rgb = lerp(surface.baseColor.rgb*(2.0-wetness),surface.baseColor.rgb,ang*surface.roughness);
    updateSurface(surface);
 }
 
@@ -416,6 +417,11 @@ vec4 computeForwardProbes(Surface surface,
     vec3 wsEyePos, float skylightCubemapIdx, int SkylightDamp, sampler2D BRDFTexture, sampler2D WetnessTexture, float accumTime, float dampness,
 	samplerCubeArray irradianceCubemapAR, samplerCubeArray specularCubemapAR)
 {
+   if (getFlag(surface.matFlag, 2))
+   {
+      return vec4(0,0,0,0);
+   }
+   
    int i = 0;
    float alpha = 1;
    float wetAmmout = 0;
