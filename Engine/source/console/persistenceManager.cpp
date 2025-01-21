@@ -1498,7 +1498,7 @@ void PersistenceManager::updateObject(SimObject* object, ParsedObject* parentObj
                // value then add it to the ParsedObject's newLines                        
                if (mustUpdate)
                {
-                  newLines.push_back(String::String(value).c_str());
+                  newLines.push_back(String(value).c_str());
                }
 
                if (defaultValue)
