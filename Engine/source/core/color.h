@@ -725,9 +725,9 @@ inline ColorI::Hsb ColorI::getHSB() const
    F64 gPercent = (F64)green / 255.0;
    F64 bPercent = (F64)blue / 255.0;
 
-   // Find the min and max values among the normalized RGB values
-   F64 maxColor = mMax( rPercent, mMax(gPercent, bPercent));
-   F64 minColor = mMin( rPercent, mMin(gPercent, bPercent));
+   // Find the max and min values among the normalized RGB values
+   F64 maxColor = mMax(rPercent, mMax(gPercent, bPercent));
+   F64 minColor = mMin(rPercent, mMin(gPercent, bPercent));
 
    // Initialize H, S, B
    F64 H = 0.0, S = 0.0, B = maxColor;
@@ -739,29 +739,25 @@ inline ColorI::Hsb ColorI::getHSB() const
       S = delta / maxColor; // Saturation
 
       // Compute hue
-      if (maxColor == rPercent)
+      if (fabs(maxColor - rPercent) < 1e-6)
       {
-         H = 60.0 * mFmodD(((gPercent - bPercent) / delta), 6.0);
+         H = 60.0 * ((gPercent - bPercent) / delta);
       }
-      else if (maxColor == gPercent)
+      else if (fabs(maxColor - gPercent) < 1e-6)
       {
          H = 60.0 * (((bPercent - rPercent) / delta) + 2.0);
       }
-      else if (maxColor == bPercent)
+      else if (fabs(maxColor - bPercent) < 1e-6)
       {
          H = 60.0 * (((rPercent - gPercent) / delta) + 4.0);
       }
    }
 
-   // Normalize hue to [0, 360)
-   if (H < 0.0)
-      H += 360.0;
-
    // Prepare the output HSB struct
    ColorI::Hsb val;
-   val.hue = static_cast<U32>(H);
-   val.sat = static_cast<U32>(S * 100.0);         // Saturation as percentage
-   val.brightness = static_cast<U32>(B * 100.0); // Brightness as percentage
+   val.hue = static_cast<U32>(H + 0.5);            // Round to nearest integer
+   val.sat = static_cast<U32>(S * 100.0 + 0.5);    // Convert to percentage
+   val.brightness = static_cast<U32>(B * 100.0 + 0.5); // Convert to percentage
 
    return val;
 }
