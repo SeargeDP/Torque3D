@@ -65,9 +65,12 @@ void main()
     {
         float blendX = (1.0 - texCoord.x);
         float blendY = texCoord.y;
-
+        float gamma = 2.4;
+        blendX = pow(abs(blendX), gamma);
+        blendY = pow(abs(blendY), 1/gamma);
+        
         vec4 interpolatedColor = mix(mix(baseColor,vec4(1.0f, 1.0f, 1.0f, 1.0f), blendX),vec4(0.0f, 0.0f, 0.0f, 1.0f), blendY);
-        baseColor = interpolatedColor;
+        baseColor = interpolatedColor; 
     }
 
     if(cornerRadius > 0.0 || halfBorder > 0.0)
@@ -78,20 +81,20 @@ void main()
         {
             if(sdf < 0.0)
             {
-                toColor = color;
+                toColor = baseColor;
                 sdf = abs(sdf) - borderSize;
             } 
             
         } 
         else{
-            fromColor = color; 
+            fromColor = baseColor; 
         }  
 
         float alpha = smoothstep(-1.0, 1.0, sdf); 
-        OUT_col = mix(fromColor, toColor, alpha);
+        OUT_col = mix(fromColor, baseColor, alpha);
     }
     else
     {
-        OUT_col = color;
+        OUT_col = baseColor; 
     }
 }

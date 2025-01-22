@@ -69,9 +69,12 @@ float4 main(Conn IN) : TORQUE_TARGET0
 
     if(gradientFill > 0.5f)
     {
-        float blendX = (1.0 - IN.texCoord.x);
+        float blendX = 1.0 - IN.texCoord.x;
         float blendY = IN.texCoord.y;
-        
+        float gamma = 2.4;
+        blendX = pow(abs(blendX), gamma);
+        blendY = pow(abs(blendY), 1/gamma);
+
         float4 interpolatedColor = lerp(lerp(baseColor,float4(1.0f, 1.0f, 1.0f, 1.0f), blendX),float4(0.0f, 0.0f, 0.0f, 1.0f), blendY);
         baseColor = interpolatedColor;
     }
