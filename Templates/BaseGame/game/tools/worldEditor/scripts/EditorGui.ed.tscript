@@ -2596,13 +2596,13 @@ function EWorldEditor::syncToolPalette( %this )
    switch$ ( GlobalGizmoProfile.mode )
    {
       case "None":
-         EWorldEditorNoneModeBtn.performClick();
+         EWorldEditorNoneModeBtn::onClick();
       case "Move":
-         EWorldEditorMoveModeBtn.performClick();
+         EWorldEditorMoveModeBtn::onClick();
       case "Rotate":
-         EWorldEditorRotateModeBtn.performClick();
+         EWorldEditorRotateModeBtn::onClick();
       case "Scale":
-         EWorldEditorScaleModeBtn.performClick();
+         EWorldEditorScaleModeBtn::onClick();
    }
 }
 
@@ -3325,10 +3325,10 @@ function TerrainSetHeightSliderCtrlContainer::onWake(%this)
 }
 
 //------------------------------------------------------------------------------------
-function CameraSpeedDropdownCtrlContainer::onWake(%this)
+function CameraSpeedDropdownContainer::onWake(%this)
 {
-   %this-->slider.setValue(CameraSpeedDropdownContainer-->textEdit.getText());
-   %pos = CameraSpeedDropdownContainer.getGlobalPosition();
+   %this-->slider.setValue(CameraSpeedDropdownCtrlContainer-->textEdit.getText());
+   %pos = CameraSpeedDropdownCtrlContainer.getGlobalPosition();
    %this-->slider.setPositionGlobal(%pos.x, %pos.y + 25);
 }
 
