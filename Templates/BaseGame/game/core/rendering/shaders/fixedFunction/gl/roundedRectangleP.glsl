@@ -20,6 +20,7 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 in vec4 color;
+in vec2 texCoord;
 
 out vec4 OUT_col;
 
@@ -29,6 +30,7 @@ uniform vec2 oneOverViewport;
 uniform float radius;
 uniform float borderSize;
 uniform vec4 borderCol;
+uniform float gradientFill;
 
 float RoundedRectSDF(vec2 p, vec2 size, float radius)
 {
@@ -57,13 +59,16 @@ void main()
 
     float cornerRadius = radius;
 
-    // if ((p.y < 0.0 && p.x < 0.0) || // top left corner
-    //     (p.y < 0.0 && p.x > 0.0) || // top right corner
-    //     (p.y > 0.0 && p.x > 0.0) || // bottom right corner.  
-    //     (p.y > 0.0 && p.x < 0.0))  // bottom left corner
-    // {
-    //     cornerRadius = radius;   
-    // } 
+    vec4 baseColor = color;
+
+    if(gradientFill > 0.5f)
+    {
+        float blendX = (1.0 - texCoord.x);
+        float blendY = texCoord.y;
+
+        vec4 interpolatedColor = mix(mix(baseColor,vec4(1.0f, 1.0f, 1.0f, 1.0f), blendX),vec4(0.0f, 0.0f, 0.0f, 1.0f), blendY);
+        baseColor = interpolatedColor;
+    }
 
     if(cornerRadius > 0.0 || halfBorder > 0.0)
     {
@@ -73,14 +78,8 @@ void main()
         {
             if(sdf < 0.0)
             {
-                // if ((p.y >= -halfSize.y - radius + halfBorder && p.y <= -halfSize.y + radius - halfBorder)  ||  // top border
-                //     (p.y >= halfSize.y - radius + halfBorder && p.y <= halfSize.y + radius - halfBorder)    ||  // bottom border
-                //     (p.x >= -halfSize.x - radius + halfBorder && p.x <= -halfSize.x + radius - halfBorder)  ||  // left border
-                //     (p.x >= halfSize.x - radius + halfBorder && p.x <= halfSize.x + radius - halfBorder) ) {    // right border
-                    
-                // }
                 toColor = color;
-                sdf = abs(sdf) / borderSize;
+                sdf = abs(sdf) - borderSize;
             } 
             
         } 

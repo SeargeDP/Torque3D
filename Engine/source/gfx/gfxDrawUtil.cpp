@@ -540,35 +540,35 @@ void GFXDrawUtil::drawRect( const Point2F &upperLeft, const Point2F &lowerRight,
 //-----------------------------------------------------------------------------
 // Draw Rectangle Fill
 //-----------------------------------------------------------------------------
-void GFXDrawUtil::drawRectFill(const RectF& rect, const ColorI& color, const F32& borderSize, const ColorI& borderColor)
+void GFXDrawUtil::drawRectFill(const RectF& rect, const ColorI& color, const F32& borderSize, const ColorI& borderColor, bool gradientFill)
 {
-   drawRoundedRect(0.0f, rect.point, Point2F(rect.extent.x + rect.point.x - 1, rect.extent.y + rect.point.y - 1), color, borderSize, borderColor);
+   drawRoundedRect(0.0f, rect.point, Point2F(rect.extent.x + rect.point.x - 1, rect.extent.y + rect.point.y - 1), color, borderSize, borderColor, gradientFill);
 }
 
-void GFXDrawUtil::drawRectFill(const Point2I& upperLeft, const Point2I& lowerRight, const ColorI& color, const F32& borderSize, const ColorI& borderColor)
+void GFXDrawUtil::drawRectFill(const Point2I& upperLeft, const Point2I& lowerRight, const ColorI& color, const F32& borderSize, const ColorI& borderColor, bool gradientFill)
 {
-   drawRoundedRect(0.0f, Point2F((F32)upperLeft.x, (F32)upperLeft.y), Point2F((F32)lowerRight.x, (F32)lowerRight.y), color, borderSize, borderColor);
+   drawRoundedRect(0.0f, Point2F((F32)upperLeft.x, (F32)upperLeft.y), Point2F((F32)lowerRight.x, (F32)lowerRight.y), color, borderSize, borderColor, gradientFill);
 }
 
-void GFXDrawUtil::drawRectFill(const RectI& rect, const ColorI& color, const F32& borderSize, const ColorI& borderColor)
+void GFXDrawUtil::drawRectFill(const RectI& rect, const ColorI& color, const F32& borderSize, const ColorI& borderColor, bool gradientFill)
 {
-   drawRoundedRect(0.0f, rect.point, Point2I(rect.extent.x + rect.point.x - 1, rect.extent.y + rect.point.y - 1), color, borderSize, borderColor);
+   drawRoundedRect(0.0f, rect.point, Point2I(rect.extent.x + rect.point.x - 1, rect.extent.y + rect.point.y - 1), color, borderSize, borderColor, gradientFill);
 }
 
-void GFXDrawUtil::drawRectFill(const Point2F& upperLeft, const Point2F& lowerRight, const ColorI& color, const F32& borderSize,const ColorI& borderColor)
+void GFXDrawUtil::drawRectFill(const Point2F& upperLeft, const Point2F& lowerRight, const ColorI& color, const F32& borderSize,const ColorI& borderColor, bool gradientFill)
 {
    // draw a rounded rect with 0 radiuse.
-   drawRoundedRect(0.0f, upperLeft, lowerRight, color, borderSize, borderColor);
+   drawRoundedRect(0.0f, upperLeft, lowerRight, color, borderSize, borderColor, gradientFill);
 }
 
-void GFXDrawUtil::drawRoundedRect(const F32& cornerRadius, const RectI& rect, const ColorI& color, const F32& borderSize, const ColorI& borderColor)
+void GFXDrawUtil::drawRoundedRect(const F32& cornerRadius, const RectI& rect, const ColorI& color, const F32& borderSize, const ColorI& borderColor, bool gradientFill)
 {
-   drawRoundedRect(cornerRadius, rect.point, Point2I(rect.extent.x + rect.point.x - 1, rect.extent.y + rect.point.y - 1), color, borderSize, borderColor);
+   drawRoundedRect(cornerRadius, rect.point, Point2I(rect.extent.x + rect.point.x - 1, rect.extent.y + rect.point.y - 1), color, borderSize, borderColor, gradientFill);
 }
 
-void GFXDrawUtil::drawRoundedRect(const F32& cornerRadius, const Point2I& upperLeft, const Point2I& lowerRight, const ColorI& color, const F32& borderSize, const ColorI& borderColor)
+void GFXDrawUtil::drawRoundedRect(const F32& cornerRadius, const Point2I& upperLeft, const Point2I& lowerRight, const ColorI& color, const F32& borderSize, const ColorI& borderColor, bool gradientFill)
 {
-   drawRoundedRect(cornerRadius, Point2F((F32)upperLeft.x, (F32)upperLeft.y), Point2F((F32)lowerRight.x, (F32)lowerRight.y), color, borderSize, borderColor);
+   drawRoundedRect(cornerRadius, Point2F((F32)upperLeft.x, (F32)upperLeft.y), Point2F((F32)lowerRight.x, (F32)lowerRight.y), color, borderSize, borderColor, gradientFill);
 }
 
 void GFXDrawUtil::drawRoundedRect(const F32& cornerRadius,
@@ -576,7 +576,8 @@ void GFXDrawUtil::drawRoundedRect(const F32& cornerRadius,
    const Point2F& lowerRight,
    const ColorI& color,
    const F32& borderSize,
-   const ColorI& borderColor)
+   const ColorI& borderColor,
+   bool gradientFill)
 {
 
    // NorthWest and NorthEast facing offset vectors
@@ -594,6 +595,14 @@ void GFXDrawUtil::drawRoundedRect(const F32& cornerRadius,
    verts[3].point.set(lowerRight.x - nw.x + ulOffset, lowerRight.y - nw.y + ulOffset, 0.0f);
    for (S32 i = 0; i < 4; i++)
       verts[i].color = color;
+
+   if (gradientFill)
+   {
+      verts[0].texCoord.set(0.0f, 0.0f); // top left
+      verts[1].texCoord.set(1.0f, 0.0f); // top right
+      verts[2].texCoord.set(0.0f, 1.0f); // bottom left
+      verts[3].texCoord.set(1.0f, 1.0f); // bottom right
+   }
 
    verts.unlock();
    mDevice->setVertexBuffer(verts);
@@ -623,6 +632,14 @@ void GFXDrawUtil::drawRoundedRect(const F32& cornerRadius,
    mRoundRectangleShaderConsts->setSafe(mRoundRectangleShader->getShaderConstHandle("$sizeUni"), size);
    mRoundRectangleShaderConsts->setSafe(mRoundRectangleShader->getShaderConstHandle("$borderSize"), borderSize);
    mRoundRectangleShaderConsts->setSafe(mRoundRectangleShader->getShaderConstHandle("$borderCol"), borderColor);
+   if (gradientFill)
+   {
+      mRoundRectangleShaderConsts->setSafe(mRoundRectangleShader->getShaderConstHandle("$gradientFill"), 1.0f);
+   }
+   else
+   {
+      mRoundRectangleShaderConsts->setSafe(mRoundRectangleShader->getShaderConstHandle("$gradientFill"), 0.0f);
+   }
 
    Point2F rectCenter((F32)(topLeftCorner.x + (size.x / 2.0)), (F32)(topLeftCorner.y + (size.y / 2.0)));
    mRoundRectangleShaderConsts->setSafe(mRoundRectangleShader->getShaderConstHandle("$rectCenter"), rectCenter);
