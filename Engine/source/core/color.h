@@ -129,11 +129,11 @@ public:
    struct Hsb
    {
       Hsb() :hue(0), sat(0), brightness(0){};
-      Hsb(U32 h, U32 s, U32 b) :hue(h), sat(s), brightness(b){};
+      Hsb(F64 h, F64 s, F64 b) :hue(h), sat(s), brightness(b){};
 
-      U32 hue;   ///Hue
-      U32 sat;   ///Saturation
-      U32 brightness;   //Brightness/Value/Lightness
+      F64 hue;   ///Hue
+      F64 sat;   ///Saturation
+      F64 brightness;   //Brightness/Value/Lightness
    };
 
 public:
@@ -504,9 +504,9 @@ inline void ColorI::set(const Hsb& color)
    }
 
    // Convert normalized [0.0, 1.0] RGB values to integer [0, 255]
-   red = static_cast<U32>(r * 255.0);
-   green = static_cast<U32>(g * 255.0);
-   blue = static_cast<U32>(b * 255.0);
+   red = static_cast<U32>(r * 255.0 + 0.5);
+   green = static_cast<U32>(g * 255.0 + 0.5);
+   blue = static_cast<U32>(b * 255.0 + 0.5);
    alpha = 255; // Set alpha to fully opaque
 }
 
@@ -755,9 +755,9 @@ inline ColorI::Hsb ColorI::getHSB() const
 
    // Prepare the output HSB struct
    ColorI::Hsb val;
-   val.hue = static_cast<U32>(H + 0.5);            // Round to nearest integer
-   val.sat = static_cast<U32>(S * 100.0 + 0.5);    // Convert to percentage
-   val.brightness = static_cast<U32>(B * 100.0 + 0.5); // Convert to percentage
+   val.hue = H;            // Round to nearest integer
+   val.sat = S * 100.0;    // Convert to percentage
+   val.brightness = B * 100.0; // Convert to percentage
 
    return val;
 }
