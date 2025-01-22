@@ -129,11 +129,11 @@ public:
    struct Hsb
    {
       Hsb() :hue(0), sat(0), brightness(0){};
-      Hsb(U32 h, U32 s, U32 b) :hue(h), sat(s), brightness(b){};
+      Hsb(F64 h, F64 s, F64 b) :hue(h), sat(s), brightness(b){};
 
-      U32 hue;   ///Hue
-      U32 sat;   ///Saturation
-      U32 brightness;   //Brightness/Value/Lightness
+      F64 hue;   ///Hue
+      F64 sat;   ///Saturation
+      F64 brightness;   //Brightness/Value/Lightness
    };
 
 public:
@@ -466,72 +466,48 @@ inline void ColorI::set(const ColorI& in_rCopy,
 
 inline void ColorI::set(const Hsb& color)
 {
-	U32 r = 0;
-	U32 g = 0;
-	U32 b = 0;
+   // Normalize the input HSB values
+   F64 H = (F64)color.hue / 360.0;        // Hue: [0, 360] -> [0, 1]
+   F64 S = (F64)color.sat / 100.0;        // Saturation: [0, 100] -> [0, 1]
+   F64 B = (F64)color.brightness / 100.0; // Brightness: [0, 100] -> [0, 1]
 
-	F64 L = ((F64)color.brightness) / 100.0;
-	F64 S = ((F64)color.sat) / 100.0;
-	F64 H = ((F64)color.hue) / 360.0;
+   F64 r = 0.0, g = 0.0, b = 0.0;
 
-	if (color.sat == 0)
-	{
-		r = color.brightness;
-		g = color.brightness;
-		b = color.brightness;
-	}
-	else
-	{
-		F64 temp1 = 0;
-		if (L < 0.50)
-		{
-			temp1 = L*(1 + S);
-		}
-		else
-		{
-			temp1 = L + S - (L*S);
-		}
+   if(S == 0.0)
+   {
+      // Achromatic case (grey scale)
+      r = g = b = B;
+   }
+   else
+   {
+      // Compute chroma
+      F64 C = B * S;
 
-		F64 temp2 = 2.0*L - temp1;
+      // Intermediate value for the hue
+      F64 X = C * (1 - mFabsD(mFmodD(H * 6.0, 2.0) - 1));
 
-		F64 temp3 = 0;
-		for (S32 i = 0; i < 3; i++)
-		{
-			switch (i)
-			{
-			case 0: // red
-			{
-				temp3 = H + 0.33333;
-				if (temp3 > 1.0)
-					temp3 -= 1.0;
-				HSLtoRGB_Subfunction(r, temp1, temp2, temp3);
-				break;
-			}
-			case 1: // green
-			{
-				temp3 = H;
-				HSLtoRGB_Subfunction(g, temp1, temp2, temp3);
-				break;
-			}
-			case 2: // blue
-			{
-				temp3 = H - 0.33333;
-				if (temp3 < 0)
-					temp3 += 1;
-				HSLtoRGB_Subfunction(b, temp1, temp2, temp3);
-				break;
-			}
-			default:
-			{
+      // Minimum component
+      F64 m = B - C;
 
-			}
-			}
-		}
-	}
-	red = (U32)((((F64)r) / 100) * 255);
-	green = (U32)((((F64)g) / 100) * 255);
-	blue = (U32)((((F64)b) / 100) * 255);
-   alpha = 255;
+      // Assign r, g, b based on the hue sector
+      if (H >= 0.0 && H < 1.0 / 6.0) { r = C; g = X; b = 0.0; }
+      else if (H >= 1.0 / 6.0 && H < 2.0 / 6.0) { r = X; g = C; b = 0.0; }
+      else if (H >= 2.0 / 6.0 && H < 3.0 / 6.0) { r = 0.0; g = C; b = X; }
+      else if (H >= 3.0 / 6.0 && H < 4.0 / 6.0) { r = 0.0; g = X; b = C; }
+      else if (H >= 4.0 / 6.0 && H < 5.0 / 6.0) { r = X; g = 0.0; b = C; }
+      else if (H >= 5.0 / 6.0 && H <= 1.0) { r = C; g = 0.0; b = X; }
+
+      // Add the minimum component to normalize to the brightness
+      r += m;
+      g += m;
+      b += m;
+   }
+
+   // Convert normalized [0.0, 1.0] RGB values to integer [0, 255]
+   red = static_cast<U32>(r * 255.0 + 0.5);
+   green = static_cast<U32>(g * 255.0 + 0.5);
+   blue = static_cast<U32>(b * 255.0 + 0.5);
+   alpha = 255; // Set alpha to fully opaque
 }
 
 // This is a subfunction of HSLtoRGB
@@ -744,70 +720,46 @@ inline U16 ColorI::get4444() const
 
 inline ColorI::Hsb ColorI::getHSB() const
 {
-	F64 rPercent = ((F64)red) / 255;
-	F64 gPercent = ((F64)green) / 255;
-	F64 bPercent = ((F64)blue) / 255;
+   // Normalize RGB values to [0, 1]
+   F64 rPercent = (F64)red / 255.0;
+   F64 gPercent = (F64)green / 255.0;
+   F64 bPercent = (F64)blue / 255.0;
 
-	F64 maxColor = 0.0;
-	if ((rPercent >= gPercent) && (rPercent >= bPercent))
-		maxColor = rPercent;
-	if ((gPercent >= rPercent) && (gPercent >= bPercent))
-		maxColor = gPercent;
-	if ((bPercent >= rPercent) && (bPercent >= gPercent))
-		maxColor = bPercent;
+   // Find the max and min values among the normalized RGB values
+   F64 maxColor = mMax(rPercent, mMax(gPercent, bPercent));
+   F64 minColor = mMin(rPercent, mMin(gPercent, bPercent));
 
-	F64 minColor = 0.0;
-	if ((rPercent <= gPercent) && (rPercent <= bPercent))
-		minColor = rPercent;
-	if ((gPercent <= rPercent) && (gPercent <= bPercent))
-		minColor = gPercent;
-	if ((bPercent <= rPercent) && (bPercent <= gPercent))
-		minColor = bPercent;
+   // Initialize H, S, B
+   F64 H = 0.0, S = 0.0, B = maxColor;
 
-	F64 H = 0.0;
-	F64 S = 0.0;
-	F64 B = 0.0;
+   // Compute saturation
+   F64 delta = maxColor - minColor;
+   if (delta > 0.0)
+   {
+      S = delta / maxColor; // Saturation
 
-	B = (maxColor + minColor) / 2.0;
+      // Compute hue
+      if (fabs(maxColor - rPercent) < 1e-6)
+      {
+         H = 60.0 * ((gPercent - bPercent) / delta);
+      }
+      else if (fabs(maxColor - gPercent) < 1e-6)
+      {
+         H = 60.0 * (((bPercent - rPercent) / delta) + 2.0);
+      }
+      else if (fabs(maxColor - bPercent) < 1e-6)
+      {
+         H = 60.0 * (((rPercent - gPercent) / delta) + 4.0);
+      }
+   }
 
-	if (maxColor == minColor)
-	{
-		H = 0.0;
-		S = 0.0;
-	}
-	else
-	{
-		if (B < 0.50)
-		{
-			S = (maxColor - minColor) / (maxColor + minColor);
-		}
-		else
-		{
-			S = (maxColor - minColor) / (2.0 - maxColor - minColor);
-		}
-		if (maxColor == rPercent)
-		{
-			H = (gPercent - bPercent) / (maxColor - minColor);
-		}
-		if (maxColor == gPercent)
-		{
-			H = 2.0 + (bPercent - rPercent) / (maxColor - minColor);
-		}
-		if (maxColor == bPercent)
-		{
-			H = 4.0 + (rPercent - gPercent) / (maxColor - minColor);
-		}
-	}
+   // Prepare the output HSB struct
+   ColorI::Hsb val;
+   val.hue = H;            // Round to nearest integer
+   val.sat = S * 100.0;    // Convert to percentage
+   val.brightness = B * 100.0; // Convert to percentage
 
-	ColorI::Hsb val;
-	val.sat = (U32)(S * 100);
-	val.brightness = (U32)(B * 100);
-	H = H*60.0;
-	if (H < 0.0)
-		H += 360.0;
-	val.hue = (U32)H;
-
-	return val;
+   return val;
 }
 
 inline String ColorI::getHex() const

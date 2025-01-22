@@ -1104,7 +1104,7 @@ DefineEngineFunction(ColorRGBToHSB, const char*, (ColorI color), ,
    "@endtsexample\n"
    "@ingroup Strings")
 {
-   ColorI::Hsb hsb(color.getHSB());
+   ColorI::Hsb hsb(color.getHSB()); 
    String s(String::ToString(hsb.hue) + " " + String::ToString(hsb.sat) + " " + String::ToString(hsb.brightness));
    return Con::getReturnBuffer(s);
 }

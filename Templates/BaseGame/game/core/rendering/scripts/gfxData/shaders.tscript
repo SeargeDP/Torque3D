@@ -156,10 +156,10 @@ singleton ShaderData( CubemapSaveShader )
 //-----------------------------------------------------------------------------
 singleton ShaderData( RoundedRectangleGUI )
 {
-   DXVertexShaderFile   = $Core::CommonShaderPath @ "/fixedFunction/colorV.hlsl";
+   DXVertexShaderFile   = $Core::CommonShaderPath @ "/fixedFunction/addColorTextureV.hlsl";
    DXPixelShaderFile    = $Core::CommonShaderPath @ "/fixedFunction/roundedRectangleP.hlsl";
 
-   OGLVertexShaderFile  = $Core::CommonShaderPath @ "/fixedFunction/gl/colorV.glsl";
+   OGLVertexShaderFile  = $Core::CommonShaderPath @ "/fixedFunction/gl/addColorTextureV.glsl";
    OGLPixelShaderFile   = $Core::CommonShaderPath @ "/fixedFunction/gl/roundedRectangleP.glsl";
       
    pixVersion = 3.0;   
