@@ -550,6 +550,7 @@ inline void ColorI::set(const String& hex)
 	red = (U8)(convertFromHex(redString));
 	green = (U8)(convertFromHex(greenString));
 	blue = (U8)(convertFromHex(blueString));
+   alpha = 255;
 }
 
 inline S32 ColorI::convertFromHex(const String& hex) const
