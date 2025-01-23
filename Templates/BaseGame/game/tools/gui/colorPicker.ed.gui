@@ -1,36 +1,25 @@
 //--- OBJECT WRITE BEGIN ---
 $guiContent = new GuiColorPickerCtrl(ColorPickerDlg,EditorGuiGroup) {
-   displayMode = "Dropper"; // this makes the background visible
-   actionOnMove = "1";
-   position = "0 0";
-   extent = "1024 768";
-   minExtent = "8 2";
-   horizSizing = "right";
-   vertSizing = "bottom";
-   profile = "ToolsGuiDefaultProfile";
-   visible = "1";
-   active = "1";
-   Clickable = "1";
-   AffectChildren = "1";
-   tooltipProfile = "GuiToolTipProfile";
-   hovertime = "1000";
-   isContainer = "1";
-   canSave = "1";
-   canSaveDynamicFields = "0";
+      displayMode = "Dropper";
+      extent = "1024 768";
+      profile = "GuiDefaultProfile";
+      command = "%selHue = ColorPickerDlg.getSelectedHue();\n%selSat = ColorPickerDlg.getSelectedSaturation();\n%selBright = ColorPickerDlg.getSelectedBrightness();\n%selAlpha = ColorPickerDlg.getSelectedAlpha();\n\nColorHueRange.setSelectedHue(%selHue);\nColorHueRange.executeUpdate();\n\nColorBlendRange.setSelectedBrightness(%selBright);\nColorBlendRange.setSelectedSaturation(%selSat);\nColorBlendRange.executeUpdate();\n\nColorAlphaRange.setSelectedAlpha(%selAlpha);\nColorAlphaRange.executeUpdate();\n\nColorEyeDropperButton.setStateOn(false);";
+      tooltipProfile = "GuiToolTipProfile";
+      isContainer = "1";
 
    new GuiWindowCtrl() {
-         text = "  ";
-         resizeWidth = "0";
-         resizeHeight = "0";
-         canMinimize = "0";
-         canMaximize = "0";
-         closeCommand = "DoColorPickerCancelCallback(); ColorPickerDlg.getRoot().popDialog(ColorPickerDlg);";
-         position = "33 33";
-         extent = "271 574";
-         horizSizing = "windowRelative";
-         vertSizing = "windowRelative";
-         profile = "ToolsGuiWindowProfile";
-         tooltipProfile = "ToolsGuiToolTipProfile";
+      text = "  ";
+      resizeWidth = "0";
+      resizeHeight = "0";
+      canMinimize = "0";
+      canMaximize = "0";
+      closeCommand = "DoColorPickerCancelCallback(); ColorPickerDlg.getRoot().popDialog(ColorPickerDlg);";
+      position = "33 33";
+      extent = "271 574";
+      horizSizing = "windowRelative";
+      vertSizing = "windowRelative";
+      profile = "ToolsGuiWindowProfile";
+      tooltipProfile = "ToolsGuiToolTipProfile";
 
       new GuiStackControl() {
          padding = "5";
@@ -268,16 +257,25 @@ $guiContent = new GuiColorPickerCtrl(ColorPickerDlg,EditorGuiGroup) {
                      text = "Apply";
                      position = "211 1";
                      extent = "52 20";
-                     command = "DoColorPickerCallback();";
                      profile = "ToolsGuiButtonProfile";
+                     command = "DoColorPickerCallback();";
                      tooltipProfile = "GuiToolTipProfile";
                   };
                   new GuiButtonCtrl() {
                      text = "Cancel";
                      position = "211 24";
                      extent = "52 20";
-                     command = "DoColorPickerCancelCallback();";
                      profile = "ToolsGuiButtonProfile";
+                     command = "DoColorPickerCancelCallback();";
+                     tooltipProfile = "GuiToolTipProfile";
+                  };
+                  new GuiBitmapButtonCtrl(ColorEyeDropperButton) {
+                     BitmapAsset = "ToolsModule:eyedropper_n_image";
+                     buttonType = "ToggleButton";
+                     position = "223 56";
+                     extent = "25 25";
+                     profile = "ToolsGuiCheckBoxProfile";
+                     command = "ColorPickerDlg.activateEyeDropper();";
                      tooltipProfile = "GuiToolTipProfile";
                   };
                };

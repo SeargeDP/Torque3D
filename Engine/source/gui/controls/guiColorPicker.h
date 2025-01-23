@@ -108,23 +108,27 @@ class GuiColorPickerCtrl : public GuiControl
    /// <param name="bounds">The bounds of the ctrl.</param>
    void renderAlphaSelector(RectI& bounds);
 
+   void renderEyeDropper();
+
    /// @name Core Variables
    /// @{
-   PickMode mDisplayMode;	///< Current color display mode of the selector
+   PickMode mDisplayMode;	      ///< Current color display mode of the selector
    SelectorMode mSelectorMode;	///< Current color display mode of the selector
    F64 mSelectedHue;
    F64 mSelectedSaturation;
    F64 mSelectedBrightness;
    F64 mSelectedAlpha;
+   Point2I eyeDropperPos;
+   GBitmap* eyeDropperCap;
+   GFXTexHandle eyeHandle;
 
-   bool mMouseOver;		///< Mouse is over?
-   bool mMouseDown;		///< Mouse button down?
-   bool mActionOnMove;		///< Perform onAction() when position has changed?
-   bool mShowReticle;       ///< Show reticle on render
+   bool mDropperActive;       ///< Is the eye dropper active?
+   bool mMouseOver;		      ///< Mouse is over?
+   bool mMouseDown;		      ///< Mouse button down?
+   bool mActionOnMove;		   ///< Perform onAction() when position has changed?
+   bool mShowReticle;         ///< Show reticle on render
 
-   Point2I findColor(const LinearColorF & color, const Point2I& offset, const Point2I& resolution, GBitmap& bmp);
-   
-   S32   mSelectorGap;		///< The half-way "gap" between the selector pos and where the selector is allowed to draw. 
+   S32   mSelectorGap;		   ///< The half-way "gap" between the selector pos and where the selector is allowed to draw. 
 
    GFXStateBlockRef mStateBlock;
    /// @}
@@ -181,6 +185,9 @@ class GuiColorPickerCtrl : public GuiControl
    /// <param name="alphaValue">Alpha value, 0 - 255.</param>
    void setSelectedAlpha(const F64& alphaValue);
    F64 getSelectedAlpha() { return mSelectedAlpha; }
+
+   void activateEyeDropper();
+
 };
 
 typedef GuiColorPickerCtrl::PickMode GuiColorPickMode;
