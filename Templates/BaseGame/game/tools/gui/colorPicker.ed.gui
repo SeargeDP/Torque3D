@@ -442,6 +442,7 @@ function ColorPickerRGBClass::onValidate(%this)
    else
    {
       %hsb = ColorLinearRGBToHSB(%red SPC %green SPC %blue);
+      %alpha *= 255.0
    }
    // these automatically update our ColorNewSelected which
    // updates all text fields including these.
@@ -452,7 +453,7 @@ function ColorPickerRGBClass::onValidate(%this)
    ColorBlendRange.setSelectedBrightness(getWord(%hsb, 2));
    ColorBlendRange.executeUpdate();
 
-   ColorAlphaRange.setSelectedAlpha(%alpha * 255.0);
+   ColorAlphaRange.setSelectedAlpha(%alpha);
    ColorAlphaRange.executeUpdate();
 }
 
