@@ -103,7 +103,7 @@ void GuiColorPickerCtrl::initPersistFields()
 void GuiColorPickerCtrl::renderBlendRange(RectI& bounds)
 {
    ColorI currentColor;
-   currentColor.set(ColorI::Hsb(mSelectedHue, 100, 100));
+   currentColor.set(Hsb(mSelectedHue, 100, 100));
    GFX->getDrawUtil()->drawRectFill(bounds, currentColor, 0.0f, ColorI(0,0,0,0), true);
 }
 
@@ -123,7 +123,7 @@ void GuiColorPickerCtrl::renderBlendSelector(RectI& bounds)
    selectorRect.set(Point2I(selectorPos.x - mSelectorGap, selectorPos.y - mSelectorGap), Point2I(mSelectorGap * 2, mSelectorGap * 2));
 
    ColorI currentColor;
-   currentColor.set(ColorI::Hsb(mSelectedHue, mSelectedSaturation, mSelectedBrightness));
+   currentColor.set(Hsb(mSelectedHue, mSelectedSaturation, mSelectedBrightness));
    GFX->getDrawUtil()->drawRectFill(selectorRect, currentColor, 2.0f, ColorI::WHITE);
 }
 
@@ -145,8 +145,8 @@ void GuiColorPickerCtrl::renderHueGradient(RectI& bounds, U32 numColours)
       U32 nextHue = static_cast<U32>((F32(i + 1) / F32(numColours)) * 360.0f);
 
       ColorI currentColor, nextColor;
-      currentColor.set(ColorI::Hsb(currentHue, 100, 100));
-      nextColor.set(ColorI::Hsb(nextHue, 100, 100));
+      currentColor.set(Hsb(currentHue, 100, 100));
+      nextColor.set(Hsb(nextHue, 100, 100));
 
       switch (mSelectorMode)
       {
@@ -226,7 +226,7 @@ void GuiColorPickerCtrl::renderHueSelector(RectI& bounds)
    }
 
    ColorI currentColor;
-   currentColor.set(ColorI::Hsb(mSelectedHue, 100, 100));
+   currentColor.set(Hsb(mSelectedHue, 100, 100));
    GFX->getDrawUtil()->drawRectFill(selectorRect, currentColor, 2.0f, ColorI::WHITE);
 }
 
@@ -241,7 +241,7 @@ void GuiColorPickerCtrl::renderAlphaGradient(RectI& bounds)
    S32 b = bounds.point.y + bounds.extent.y;
 
    ColorI currentColor;
-   currentColor.set(ColorI::Hsb(mSelectedHue, 100, 100));
+   currentColor.set(Hsb(mSelectedHue, 100, 100));
 
    ColorI alphaCol = ColorI::BLACK;
    alphaCol.alpha = 0;
@@ -317,7 +317,7 @@ void GuiColorPickerCtrl::renderAlphaSelector(RectI& bounds)
    }
 
    ColorI currentColor;
-   currentColor.set(ColorI::Hsb(mSelectedHue, 100, 100));
+   currentColor.set(Hsb(mSelectedHue, 100, 100));
    currentColor.alpha = mSelectedAlpha;
 
    GFX->getDrawUtil()->drawRectFill(selectorRect, currentColor, 2.0f, ColorI::WHITE);
@@ -342,7 +342,7 @@ void GuiColorPickerCtrl::renderEyeDropper()
       RectI magnifierBounds(magnifierPosition, magnifierSize);
 
       ColorI currentColor;
-      currentColor.set(ColorI::Hsb(mSelectedHue, mSelectedSaturation, mSelectedBrightness));
+      currentColor.set(Hsb(mSelectedHue, mSelectedSaturation, mSelectedBrightness));
       currentColor.alpha = mSelectedAlpha;
 
       GFX->getDrawUtil()->drawRectFill(magnifierBounds, currentColor, 2.0f, ColorI::BLACK);
@@ -368,7 +368,7 @@ void GuiColorPickerCtrl::onRender(Point2I offset, const RectI& updateRect)
    case GuiColorPickerCtrl::pPalette:
    {
       ColorI currentColor;
-      currentColor.set(ColorI::Hsb(mSelectedHue, mSelectedSaturation, mSelectedBrightness));
+      currentColor.set(Hsb(mSelectedHue, mSelectedSaturation, mSelectedBrightness));
       currentColor.alpha = mSelectedAlpha;
       GFX->getDrawUtil()->drawRectFill(boundsRect, currentColor);
       break;
@@ -593,7 +593,7 @@ void GuiColorPickerCtrl::onMouseMove(const GuiEvent &event)
       eyeDropperCap->getColor(eyeDropperPos.x, eyeDropperPos.y, sampledColor);
 
       // Convert the sampled color to HSB
-      ColorI::Hsb hsb = sampledColor.getHSB();
+      Hsb hsb = sampledColor.getHSB();
       mSelectedHue = hsb.hue;
       mSelectedSaturation = hsb.sat;
       mSelectedBrightness = hsb.brightness;
@@ -779,7 +779,7 @@ DefineEngineMethod(GuiColorPickerCtrl, getSelectedAlpha, F64, (), , "Gets the cu
 
 DefineEngineMethod(GuiColorPickerCtrl, setSelectedColorI, void, (ColorI col), , "Sets the current selected hsb from a colorI value.")
 {
-   ColorI::Hsb hsb(col.getHSB());
+   Hsb hsb(col.getHSB());
    object->setSelectedHue(hsb.hue);
    object->setSelectedSaturation(hsb.sat);
    object->setSelectedBrightness(hsb.brightness);
@@ -789,26 +789,25 @@ DefineEngineMethod(GuiColorPickerCtrl, setSelectedColorI, void, (ColorI col), , 
 DefineEngineMethod(GuiColorPickerCtrl, getSelectedColorI, ColorI, (), , "Gets the current selected hsb as a colorI value.")
 {
    ColorI col;
-   col.set(ColorI::Hsb(object->getSelectedHue(), object->getSelectedSaturation(), object->getSelectedBrightness()));
+   col.set(Hsb(object->getSelectedHue(), object->getSelectedSaturation(), object->getSelectedBrightness()));
    col.alpha = object->getSelectedAlpha();
    return col;
 }
 
 DefineEngineMethod(GuiColorPickerCtrl, setSelectedLinearColor, void, (LinearColorF colF), , "Sets the current selected hsb froma a LinearColorF value.")
 {
-   ColorI col = colF.toColorI();
-   ColorI::Hsb hsb(col.getHSB());
+   Hsb hsb = colF.getHSB();
    object->setSelectedHue(hsb.hue);
    object->setSelectedSaturation(hsb.sat);
    object->setSelectedBrightness(hsb.brightness);
-   object->setSelectedAlpha(col.alpha);
+   object->setSelectedAlpha(colF.alpha * 255.0);
 }
 
 
 DefineEngineMethod(GuiColorPickerCtrl, getSelectedLinearColor, LinearColorF, (), , "Gets the current selected hsb as a LinearColorF value.")
 {
-   ColorI col;
-   col.set(ColorI::Hsb(object->getSelectedHue(), object->getSelectedSaturation(), object->getSelectedBrightness()));
-   col.alpha = object->getSelectedAlpha();
-   return LinearColorF(col);
+   LinearColorF col;
+   col.set(Hsb(object->getSelectedHue(), object->getSelectedSaturation(), object->getSelectedBrightness()));
+   col.alpha = (F32)object->getSelectedAlpha() / 255.0f;
+   return col;
 }

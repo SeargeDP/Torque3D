@@ -109,7 +109,7 @@ $guiContent = new GuiColorPickerCtrl(ColorPickerDlg,EditorGuiGroup) {
                      position = "213 3";
                      extent = "50 25";
                      profile = "GuiDefaultProfile";
-                     command = "%selHue = ColorNewSelected.getSelectedHue();\n%selSat = ColorNewSelected.getSelectedSaturation();\n%selBright = ColorNewSelected.getSelectedBrightness();\n\nHueTextEditor.setText(%selHue);\nSatTextEditor.setText(%selSat);\nBrightTextEditor.setText(%selBright);\n\n%color = ColorNewSelected.getSelectedColorI();\nRedTextEdit.setText(getWord(%color, 0));\nGreenTextEdit.setText(getWord(%color, 1));\nBlueTextEdit.setText(getWord(%color, 2));\nAlphaTextEdit.setText(getWord(%color, 3));\n\n%hex = ColorRGBToHEX(%color);\nHexTextEditor.setText(%hex);";
+                     command = "%selHue = ColorNewSelected.getSelectedHue();\n%selSat = ColorNewSelected.getSelectedSaturation();\n%selBright = ColorNewSelected.getSelectedBrightness();\n\nHueTextEditor.setText(%selHue);\nSatTextEditor.setText(%selSat);\nBrightTextEditor.setText(%selBright);\n\n%color = $ColorCallbackType == 1 ? ColorNewSelected.getSelectedColorI() : ColorNewSelected.getSelectedLinearColor();\nRedTextEdit.setText(getWord(%color, 0));\nGreenTextEdit.setText(getWord(%color, 1));\nBlueTextEdit.setText(getWord(%color, 2));\nAlphaTextEdit.setText(getWord(%color, 3));\n\n%hex = ColorRGBToHEX(ColorNewSelected.getSelectedColorI());\nHexTextEditor.setText(%hex);";
                      tooltipProfile = "GuiToolTipProfile";
                   };
                   new GuiColorPickerCtrl(ColorOld) {
@@ -437,8 +437,12 @@ function ColorPickerRGBClass::onValidate(%this)
    %alpha = AlphaTextEdit.getValue();
 
    //Update all the other color fields
-   %hsb = ColorRGBToHSB(%red SPC %green SPC %blue);
-
+   if( $ColorCallbackType == 1)
+      %hsb = ColorRGBToHSB(%red SPC %green SPC %blue);
+   else
+   {
+      %hsb = ColorLinearRGBToHSB(%red SPC %green SPC %blue);
+   }
    // these automatically update our ColorNewSelected which
    // updates all text fields including these.
    ColorHueRange.setSelectedHue(getWord(%hsb, 0));
@@ -448,7 +452,7 @@ function ColorPickerRGBClass::onValidate(%this)
    ColorBlendRange.setSelectedBrightness(getWord(%hsb, 2));
    ColorBlendRange.executeUpdate();
 
-   ColorAlphaRange.setSelectedAlpha(%alpha);
+   ColorAlphaRange.setSelectedAlpha(%alpha * 255.0);
    ColorAlphaRange.executeUpdate();
 }
 
