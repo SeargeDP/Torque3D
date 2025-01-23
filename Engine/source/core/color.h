@@ -108,7 +108,7 @@ public:
    U32 getARGBPack() const;
    U32 getRGBAPack() const;
    U32 getABGRPack() const;
-   Hsb getHSB() const;
+   Hsb getHSB();
 
    void interpolate(const LinearColorF& in_rC1,
                     const LinearColorF& in_rC2,
@@ -504,16 +504,24 @@ inline void LinearColorF::set(const Hsb& color)
       r = c; g = 0.0; b = x;
    }
 
-   red = static_cast<F32>(r + m);
-   green = static_cast<F32>(g + m);
-   blue = static_cast<F32>(b + m);
+   r += m;
+   g += m;
+   b += m;
+
+   red = static_cast<F32>(srgbToLinearChannel(r));
+   green = static_cast<F32>(srgbToLinearChannel(g));
+   blue = static_cast<F32>(srgbToLinearChannel(b));
    alpha = 1.0f; // Default alpha to 1.0
 }
 
-inline Hsb LinearColorF::getHSB() const
+inline Hsb LinearColorF::getHSB()
 {
-   F32 maxVal = mMax( red, mMax(green, blue));
-   F32 minVal = mMin(red, mMin(green, blue));
+   F32 r = linearChannelToSrgb(red);
+   F32 g = linearChannelToSrgb(green);
+   F32 b = linearChannelToSrgb(blue);
+
+   F32 maxVal = mMax(r, mMax(g, b));
+   F32 minVal = mMin(r, mMin(g, b));
    F32 delta = maxVal - minVal;
 
    Hsb hsb;
@@ -521,12 +529,12 @@ inline Hsb LinearColorF::getHSB() const
    hsb.sat = (maxVal > 0.0f) ? (delta / maxVal) * 100.0 : 0.0;
 
    if (delta > 0.0f) {
-      if (red == maxVal)
-         hsb.hue = 60.0 * mFmod(((green - blue) / delta), 6.0);
-      else if (green == maxVal)
-         hsb.hue = 60.0 * (((blue - red) / delta) + 2.0);
+      if (r == maxVal)
+         hsb.hue = 60.0 * mFmod(((g - b) / delta), 6.0);
+      else if (g == maxVal)
+         hsb.hue = 60.0 * (((b - r) / delta) + 2.0);
       else
-         hsb.hue = 60.0 * (((red - green) / delta) + 4.0);
+         hsb.hue = 60.0 * (((r - g) / delta) + 4.0);
 
       if (hsb.hue < 0.0)
          hsb.hue += 360.0;
