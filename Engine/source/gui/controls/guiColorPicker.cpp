@@ -30,6 +30,7 @@
 #include "gfx/primBuilder.h"
 #include "gfx/gfxDrawUtil.h"
 #include "postFx/postEffectManager.h"
+#include "gfx/screenshot.h"
 
 IMPLEMENT_CONOBJECT(GuiColorPickerCtrl);
 
@@ -707,17 +708,10 @@ void GuiColorPickerCtrl::activateEyeDropper()
       // Set up our resolution.
       Point2I resolution = getRoot()->getExtent();
 
+      eyeDropperCap = gScreenShot->_captureBackBuffer();
+
       // Texture handle to resolve the target to.
-      eyeHandle.set(resolution.x, resolution.y, GFXFormatR8G8B8A8_SRGB, &GFXRenderTargetSRGBProfile, avar("%s() - bb (line %d)", __FUNCTION__, __LINE__));
-
-      // Get our active render target (should be backbuffer).
-      eyeHandle = PFXMGR->getBackBufferTex();
-
-      if (eyeHandle.isValid())
-      {
-         eyeDropperCap = new GBitmap(eyeHandle.getWidth(), eyeHandle.getHeight(), false, GFXFormatR8G8B8A8);
-         eyeHandle.copyToBmp(eyeDropperCap);
-      }
+      eyeHandle.set(eyeDropperCap, &GFXStaticTextureSRGBProfile, false, avar("%s() - bb (line %d)", __FUNCTION__, __LINE__));
    }
 }
 
