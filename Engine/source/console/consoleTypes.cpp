@@ -419,7 +419,7 @@ ConsoleGetType(TypeF64)
 {
    static const U32 bufSize = 256;
    char* returnBuffer = Con::getReturnBuffer(bufSize);
-   dSprintf(returnBuffer, bufSize, "%Lg", *((F64*)dptr));
+   dSprintf(returnBuffer, bufSize, "%g", *((F64*)dptr));
    return returnBuffer;
 }
 ConsoleSetType(TypeF64)
