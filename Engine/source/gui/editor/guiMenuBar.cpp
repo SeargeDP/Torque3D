@@ -506,6 +506,16 @@ void GuiMenuBar::onAction()
    mouseDownMenu->popupMenu->showPopup(root, pos.x, pos.y);
 }
 
+void GuiMenuBar::closeMenu()
+{
+   if(mouseDownMenu)
+      mouseDownMenu->popupMenu->hidePopup();
+
+   mouseOverMenu = NULL;
+   mouseDownMenu = NULL;
+   mMouseInMenu = false;
+}
+
 //  Process a tick
 void GuiMenuBar::processTick()
 {
