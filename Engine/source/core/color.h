@@ -46,11 +46,11 @@ const F32 gOneOver255 = 1.f / 255.f;
 struct Hsb
 {
    Hsb() :hue(0), sat(0), brightness(0) {};
-   Hsb(F64 h, F64 s, F64 b) :hue(h), sat(s), brightness(b) {};
+   Hsb(U32 h, U32 s, U32 b) :hue(h), sat(s), brightness(b) {};
 
-   F64 hue;   ///Hue
-   F64 sat;   ///Saturation
-   F64 brightness;   //Brightness/Value/Lightness
+   U32 hue;   ///Hue
+   U32 sat;   ///Saturation
+   U32 brightness;   //Brightness/Value/Lightness
 };
 
 class ColorI;

@@ -514,14 +514,15 @@ void GuiColorPickerCtrl::onMouseDragged(const GuiEvent &event)
       Point2I ext = getExtent();
       Point2I mousePoint = globalToLocalCoord(event.mousePoint);
 
+      F32 relX = mClampF(F32(mousePoint.x) / F32(ext.x), 0.0, 1.0);
+      F32 relY = mClampF(F32(mousePoint.y) / F32(ext.y), 0.0, 1.0);
       switch (mDisplayMode)
       {
       case GuiColorPickerCtrl::pPalette:
          return;
       case GuiColorPickerCtrl::pBlendRange:
       {
-         F32 relX = F32(mousePoint.x) / F32(ext.x);
-         F32 relY = 1.0f - F32(mousePoint.y) / F32(ext.y);
+         relY = 1.0f - relY;
          setSelectedSaturation(relX * 100.0);
          setSelectedBrightness(relY * 100.0);
          break;
@@ -532,13 +533,11 @@ void GuiColorPickerCtrl::onMouseDragged(const GuiEvent &event)
          {
          case GuiColorPickerCtrl::sHorizontal:
          {
-            F32 relX = F32(mousePoint.x) / F32(ext.x);
             setSelectedHue(relX * 360.0);
             break;
          }
          case GuiColorPickerCtrl::sVertical:
          {
-            F32 relY = F32(mousePoint.y) / F32(ext.y);
             setSelectedHue(relY * 360.0);
             break;
          }
@@ -553,13 +552,11 @@ void GuiColorPickerCtrl::onMouseDragged(const GuiEvent &event)
          {
          case GuiColorPickerCtrl::sHorizontal:
          {
-            F32 relX = F32(mousePoint.x) / F32(ext.x);
             setSelectedAlpha(relX * 255.0);
             break;
          }
          case GuiColorPickerCtrl::sVertical:
          {
-            F32 relY = F32(mousePoint.y) / F32(ext.y);
             setSelectedAlpha(relY * 255.0);
             break;
          }
@@ -623,7 +620,7 @@ void GuiColorPickerCtrl::onMouseUp(const GuiEvent&)
    mouseUnlock();
 }
 
-void GuiColorPickerCtrl::setSelectedHue(const F64& hueValue)
+void GuiColorPickerCtrl::setSelectedHue(const U32& hueValue)
 {
    if (hueValue < 0)
    {
@@ -641,7 +638,7 @@ void GuiColorPickerCtrl::setSelectedHue(const F64& hueValue)
    
 }
 
-void GuiColorPickerCtrl::setSelectedBrightness(const F64& brightValue)
+void GuiColorPickerCtrl::setSelectedBrightness(const U32& brightValue)
 {
    if (brightValue < 0)
    {
@@ -658,7 +655,7 @@ void GuiColorPickerCtrl::setSelectedBrightness(const F64& brightValue)
    mSelectedBrightness = brightValue;
 }
 
-void GuiColorPickerCtrl::setSelectedSaturation(const F64& satValue)
+void GuiColorPickerCtrl::setSelectedSaturation(const U32& satValue)
 {
    if (satValue < 0)
    {
@@ -675,7 +672,7 @@ void GuiColorPickerCtrl::setSelectedSaturation(const F64& satValue)
    mSelectedSaturation = satValue;
 }
 
-void GuiColorPickerCtrl::setSelectedAlpha(const F64& alphaValue)
+void GuiColorPickerCtrl::setSelectedAlpha(const U32& alphaValue)
 {
    if (alphaValue < 0)
    {
@@ -731,42 +728,42 @@ DefineEngineMethod(GuiColorPickerCtrl, activateEyeDropper, void, (), , "Activate
    object->activateEyeDropper();
 }
 
-DefineEngineMethod(GuiColorPickerCtrl, setSelectedHue, void, (F64 hueValue), , "Sets the selected hue value should be 0-360.")
+DefineEngineMethod(GuiColorPickerCtrl, setSelectedHue, void, (S32 hueValue), , "Sets the selected hue value should be 0-360.")
 {
    object->setSelectedHue(hueValue);
 }
 
-DefineEngineMethod(GuiColorPickerCtrl, getSelectedHue, F64, (), , "Gets the current selected hue value.")
+DefineEngineMethod(GuiColorPickerCtrl, getSelectedHue, S32, (), , "Gets the current selected hue value.")
 {
    return object->getSelectedHue();
 }
 
-DefineEngineMethod(GuiColorPickerCtrl, setSelectedBrightness, void, (F64 brightness), , "Sets the selected brightness value should be 0-100.")
+DefineEngineMethod(GuiColorPickerCtrl, setSelectedBrightness, void, (S32 brightness), , "Sets the selected brightness value should be 0-100.")
 {
    object->setSelectedBrightness(brightness);
 }
 
-DefineEngineMethod(GuiColorPickerCtrl, getSelectedBrightness, F64, (), , "Gets the current selected brightness.")
+DefineEngineMethod(GuiColorPickerCtrl, getSelectedBrightness, S32, (), , "Gets the current selected brightness.")
 {
    return object->getSelectedBrightness();
 }
 
-DefineEngineMethod(GuiColorPickerCtrl, setSelectedSaturation, void, (F64 saturation), , "Sets the selected saturation value should be 0-100.")
+DefineEngineMethod(GuiColorPickerCtrl, setSelectedSaturation, void, (S32 saturation), , "Sets the selected saturation value should be 0-100.")
 {
    object->setSelectedSaturation(saturation);
 }
 
-DefineEngineMethod(GuiColorPickerCtrl, getSelectedSaturation, F64, (), , "Gets the current selected saturation value.")
+DefineEngineMethod(GuiColorPickerCtrl, getSelectedSaturation, S32, (), , "Gets the current selected saturation value.")
 {
    return object->getSelectedSaturation();
 }
 
-DefineEngineMethod(GuiColorPickerCtrl, setSelectedAlpha, void, (F64 alpha), , "Sets the selected alpha value should be 0-255.")
+DefineEngineMethod(GuiColorPickerCtrl, setSelectedAlpha, void, (S32 alpha), , "Sets the selected alpha value should be 0-255.")
 {
    object->setSelectedAlpha(alpha);
 }
 
-DefineEngineMethod(GuiColorPickerCtrl, getSelectedAlpha, F64, (), , "Gets the current selected alpha value.")
+DefineEngineMethod(GuiColorPickerCtrl, getSelectedAlpha, S32, (), , "Gets the current selected alpha value.")
 {
    return object->getSelectedAlpha();
 }
