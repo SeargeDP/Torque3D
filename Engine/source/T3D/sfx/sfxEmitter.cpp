@@ -840,6 +840,9 @@ void SFXEmitter::_update()
 
       if (mDirty.test(SourceGroup) && mInstanceDescription->mSourceGroup)
          mInstanceDescription->mSourceGroup->addObject(mSource);
+      else if (getSoundDescription() && getSoundDescription()->mSourceGroup)
+         getSoundDescription()->mSourceGroup->addObject(mSource);
+
       // Skip these 3d only settings.
       if(mInstanceDescription->mIs3D )
       {
