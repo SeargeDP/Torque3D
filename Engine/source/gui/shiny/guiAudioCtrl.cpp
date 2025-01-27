@@ -184,6 +184,8 @@ void GuiAudioCtrl::_update()
             mSoundPlaying->setFadeTimes(mFadeInTime, mFadeOutTime);
 
          }
+         else
+            getSoundDescription()->mSourceGroup->addObject(mSoundPlaying);
 
          mSoundPlaying->play();
       }
