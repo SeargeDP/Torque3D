@@ -1197,7 +1197,7 @@ const char* MeshRoad::getSpecialFieldOut(StringTableEntry fieldName, const U32& 
 
       return StringTable->insert(buffer);
    }
-   else if (fieldName == StringTable->insert("ProfileNode"))
+   else if (fieldName == StringTable->insert("ProfileNode") && mSideProfile.mNodes.size())
    {
       Point3F nodePos = mSideProfile.mNodes[index].getPosition();
       U8 smooth, mtrl;
