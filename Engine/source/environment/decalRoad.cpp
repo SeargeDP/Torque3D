@@ -494,7 +494,7 @@ const char* DecalRoad::getSpecialFieldOut(StringTableEntry fieldName, const U32&
 
       char buffer[1024];
       dMemset(buffer, 0, 1024);
-      dSprintf(buffer, 1024, "%f %f %f %f", node.point.x, node.point.y, node.point.z, node.width);
+      dSprintf(buffer, 1024, "node = \"%f %f %f %f\";", node.point.x, node.point.y, node.point.z, node.width);
 
       return StringTable->insert(buffer);
    }
