@@ -1236,10 +1236,10 @@ bool SceneObject::_setMountPID( void* object, const char* index, const char* dat
 
 void SceneObject::resolveMountPID()
 {
-   if ( mMountPID && !mMount.object )
+   if ( mMountPID  )
    {
       SceneObject *obj = dynamic_cast< SceneObject* >( mMountPID->getObject() );
-      if ( obj )
+      if ( obj != mMount.object)
          obj->mountObject( this, mMount.node, mMount.xfm );
    }
 }
