@@ -746,51 +746,57 @@ void PaintNoiseAction::process(Selection * sel, const Gui3DMouseEvent &, bool se
       mTerrainEditor->scheduleGridUpdate();
    }
 }
-/*
-void ThermalErosionAction::process(Selection * sel, const Gui3DMouseEvent &, bool selChanged, Type)
+
+void ThermalErosionAction::process(Selection * sel, const Gui3DMouseEvent &, bool selChanged, Type type)
 {
-   if( selChanged )
+   if (selChanged)
    {
-      TerrainBlock *tblock = mTerrainEditor->getActiveTerrain();
-      if ( !tblock )
+      TerrainBlock* tblock = mTerrainEditor->getActiveTerrain();
+      if (!tblock)
          return;
-      
+      U32 size = tblock->getBlockSize();
       F32 height = 0;
       F32 maxHeight = 0;
-      U32 shift = getBinLog2( TerrainBlock::BlockSize );
+      U32 shift = getBinLog2(size);
 
-      for ( U32 x = 0; x < TerrainBlock::BlockSize; x++ )
+      mNoiseData.setSize(size * size);
+      mTerrainHeights.setSize(size * size);
+      mNoise.fBm(&mNoiseData, size, 12, 1.0f, 5.0f);
+      Vector<F32> scratch = mNoiseData;
+      mNoise.rigidMultiFractal( &mNoiseData, &scratch, size, 12, 1.0f, 5.0f );
+
+      for (U32 x = 0; x < size; x++)
       {
-         for ( U32 y = 0; y < TerrainBlock::BlockSize; y++ )
+         for (U32 y = 0; y < size; y++)
          {
-            height = fixedToFloat( tblock->getHeight( x, y ) );
-            mTerrainHeights[ x + (y << 8)] = height;
+            height = fixedToFloat(tblock->getHeight(Point2I(x, y)));
+            mTerrainHeights[x + (y << 8)] = height * mNoiseData[x + (y << 8)];
 
-            if ( height > maxHeight )
+            if (height > maxHeight)
                maxHeight = height;
          }
       }
 
-      //mNoise.erodeThermal( &mTerrainHeights, &mNoiseData, 30.0f, 5.0f, 5, TerrainBlock::BlockSize, tblock->getSquareSize(), maxHeight );
-         
-      mNoise.erodeHydraulic( &mTerrainHeights, &mNoiseData, 1, TerrainBlock::BlockSize );
+      mNoise.erodeThermal( &mTerrainHeights, &mNoiseData, 45.0f, 0.5f, 12, size, tblock->getSquareSize(), maxHeight );
+
+      //mNoise.erodeHydraulic(&mTerrainHeights, &mNoiseData, 1, tblock->getBlockSize());
 
       F32 heightDiff = 0;
 
-      for( U32 i = 0; i < sel->size(); i++ )
+      for (U32 i = 0; i < sel->size(); i++)
       {
          mTerrainEditor->getUndoSel()->add((*sel)[i]);
 
-         const Point2I &gridPos = (*sel)[i].mGridPoint.gridPos;
-         
+         const Point2I& gridPos = (*sel)[i].mGridPoint.gridPos;
+
          // Need to get the height difference
          // between the current height and the
          // erosion height to properly apply the
          // softness and pressure settings of the brush
          // for this selection.
-         heightDiff = (*sel)[i].mHeight - mNoiseData[ gridPos.x + (gridPos.y << shift)];
+         heightDiff = (*sel)[i].mHeight - mNoiseData[gridPos.x + (gridPos.y << shift)];
 
-         (*sel)[i].mHeight -= (heightDiff * (*sel)[i].mWeight);
+         (*sel)[i].mHeight -= (heightDiff * (*sel)[i].mWeight) / maxHeight;
 
          mTerrainEditor->setGridInfo((*sel)[i]);
       }
@@ -798,8 +804,60 @@ void ThermalErosionAction::process(Selection * sel, const Gui3DMouseEvent &, boo
       mTerrainEditor->gridUpdateComplete();
    }
 }
-*/
 
+void HydraulicErosionAction::process(Selection* sel, const Gui3DMouseEvent&, bool selChanged, Type type)
+{
+   if (selChanged)
+   {
+      TerrainBlock* tblock = mTerrainEditor->getActiveTerrain();
+      if (!tblock)
+         return;
+      U32 size = tblock->getBlockSize();
+      F32 height = 0;
+      F32 maxHeight = 0;
+      U32 shift = getBinLog2(size);
+
+      mNoiseData.setSize(size * size);
+      mTerrainHeights.setSize(size * size);
+      mNoise.fBm(&mNoiseData, size, 12, 1.0f, 5.0f);
+
+      for (U32 x = 0; x < size; x++)
+      {
+         for (U32 y = 0; y < size; y++)
+         {
+            height = fixedToFloat(tblock->getHeight(Point2I(x, y)));
+            mTerrainHeights[x + (y << 8)] = height * mNoiseData[x + (y << 8)];
+
+            if (height > maxHeight)
+               maxHeight = height;
+         }
+      }
+
+      mNoise.erodeHydraulic(&mTerrainHeights, &mNoiseData, 1, size);
+
+      F32 heightDiff = 0;
+
+      for (U32 i = 0; i < sel->size(); i++)
+      {
+         mTerrainEditor->getUndoSel()->add((*sel)[i]);
+
+         const Point2I& gridPos = (*sel)[i].mGridPoint.gridPos;
+
+         // Need to get the height difference
+         // between the current height and the
+         // erosion height to properly apply the
+         // softness and pressure settings of the brush
+         // for this selection.
+         heightDiff = (*sel)[i].mHeight - mNoiseData[gridPos.x + (gridPos.y << shift)];
+
+         (*sel)[i].mHeight -= (heightDiff * (*sel)[i].mWeight) / maxHeight;
+
+         mTerrainEditor->setGridInfo((*sel)[i]);
+      }
+
+      mTerrainEditor->gridUpdateComplete();
+   }
+}
 
 IMPLEMENT_CONOBJECT( TerrainSmoothAction );
 

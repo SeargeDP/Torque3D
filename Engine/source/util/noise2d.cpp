@@ -345,7 +345,7 @@ bool Noise2D::erodeThermal(Vector<F32> *src, Vector<F32> *dst, F32 slope, F32 ma
    //dMemset( r.address(), 0, r.memSize() );
 
    F32 conservation = 1.0f - mClampF(materialLoss, 0.0f,  100.0f)/100.0f;
-   slope            = mClampF(conservation, 0.0f, 89.0f);                  // clamp to 0-89 degrees
+   slope            = mMin(slope, mClampF(conservation, 0.0f, 89.0f));                  // clamp to 0-89 degrees
 
    F32 talusConst = mTan(mDegToRad(slope)) * squareSize; // in world units
    talusConst = talusConst * (fmax-fmin) / maxHeight;     // scale to current height units
