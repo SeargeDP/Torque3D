@@ -307,18 +307,31 @@ class ThermalErosionAction : public TerrainAction
 {
    public:
       ThermalErosionAction(TerrainEditor * editor) 
-      : TerrainAction(editor)
+      : TerrainAction(editor),
+         mNoiseSize(256)
       {
          mNoise.setSeed( 1 );//Sim::getCurrentTime() );
+         mNoiseData.setSize(mNoiseSize * mNoiseSize);
+         mTerrainHeights.setSize(mNoiseSize * mNoiseSize);
+         mNoise.fBm(&mNoiseData, mNoiseSize, 12, 1.0f, 5.0f);
+         //Vector<F32> scratch = mNoiseData;
+         //mNoise.rigidMultiFractal( &mNoiseData, &scratch, TerrainBlock::BlockSize, 12, 1.0f, 5.0f );
+         mNoise.getMinMax(&mNoiseData, &mMinMaxNoise.x, &mMinMaxNoise.y, mNoiseSize);
+
+         mScale = 1.5f / (mMinMaxNoise.x - mMinMaxNoise.y);
       }
       
       StringTableEntry getName(){return("thermalErode");}
 
       void process(Selection * sel, const Gui3DMouseEvent & event, bool selChanged, Type type);
 
+      const U32 mNoiseSize;
       Noise2D mNoise;
       Vector<F32> mNoiseData;
       Vector<F32> mTerrainHeights;
+      Point2F mMinMaxNoise;
+      Point2I mSelectionOrigin;
+      F32 mScale;
 };
 
 class HydraulicErosionAction : public TerrainAction

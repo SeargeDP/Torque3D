@@ -749,42 +749,56 @@ void PaintNoiseAction::process(Selection * sel, const Gui3DMouseEvent &, bool se
 
 void ThermalErosionAction::process(Selection * sel, const Gui3DMouseEvent &, bool selChanged, Type type)
 {
+   // If this is the ending
+   // mouse down event, then
+   // update the noise values.
+   U32 shift = getBinLog2(mNoiseSize);
+   TerrainBlock* tblock = mTerrainEditor->getActiveTerrain();
+   if (!tblock)
+      return;
+
+   mSelectionOrigin = Point2I(S32_MAX, S32_MAX);
+
+   F32 height = 0;
+   F32 maxHeight = 0;
+   U32 i = 0;
+   for (i=0; i < sel->size(); i++)
+   {
+      mSelectionOrigin.x = S32(mMin(F32((*sel)[i].mGridPoint.gridPos.x), F32(mSelectionOrigin.x)));
+      mSelectionOrigin.y = S32(mMin(F32((*sel)[i].mGridPoint.gridPos.y), F32(mSelectionOrigin.y)));
+      height = fixedToFloat(tblock->getHeight((*sel)[i].mGridPoint.gridPos));
+      if (height > maxHeight)
+         maxHeight = height;
+   }
+
+   for (i = 0; i < mTerrainHeights.size(); i++)
+   {
+      mTerrainHeights[i] = 0;
+   }
+
+   for (i = 0; i < sel->size(); i++)
+   {
+      mTerrainHeights[((*sel)[i].mGridPoint.gridPos.x - mSelectionOrigin.x) + (((*sel)[i].mGridPoint.gridPos.y - mSelectionOrigin.y) << shift)] = (*sel)[i].mHeight;
+   }
+
+   mNoise.setSeed(Sim::getCurrentTime());
+   //mNoise.fBm(&mNoiseData, mNoiseSize, 12, 1.0f, 5.0f);
+   //generate noise based on terrain hieghts
+   mNoise.rigidMultiFractal( &mNoiseData, &mTerrainHeights, mNoiseSize, 12, 1.0f, 5.0f );
+   //erode the noise
+   mNoise.erodeThermal(&mNoiseData, &mTerrainHeights, 45.0f, 0.5f, 12, mNoiseSize, 1, maxHeight);
+
+   mNoise.getMinMax(&mTerrainHeights, &mMinMaxNoise.x, &mMinMaxNoise.y, mNoiseSize);
+   mScale = (mMinMaxNoise.x - mMinMaxNoise.y) / maxHeight;
+
    if (selChanged)
    {
-      TerrainBlock* tblock = mTerrainEditor->getActiveTerrain();
-      if (!tblock)
-         return;
-      U32 size = tblock->getBlockSize();
-      F32 height = 0;
-      F32 maxHeight = 0;
-      U32 shift = getBinLog2(size);
-
-      mNoiseData.setSize(size * size);
-      mTerrainHeights.setSize(size * size);
-      mNoise.fBm(&mNoiseData, size, 12, 1.0f, 5.0f);
-      Vector<F32> scratch = mNoiseData;
-      mNoise.rigidMultiFractal( &mNoiseData, &scratch, size, 12, 1.0f, 5.0f );
-
-      for (U32 x = 0; x < size; x++)
-      {
-         for (U32 y = 0; y < size; y++)
-         {
-            height = fixedToFloat(tblock->getHeight(Point2I(x, y)));
-            mTerrainHeights[x + (y << 8)] = height * mNoiseData[x + (y << 8)];
-
-            if (height > maxHeight)
-               maxHeight = height;
-         }
-      }
-
-      mNoise.erodeThermal( &mTerrainHeights, &mNoiseData, 45.0f, 0.5f, 12, size, tblock->getSquareSize(), maxHeight );
-
-      //mNoise.erodeHydraulic(&mTerrainHeights, &mNoiseData, 1, tblock->getBlockSize());
-
       F32 heightDiff = 0;
-
-      for (U32 i = 0; i < sel->size(); i++)
+      for (i = 0; i < sel->size(); i++)
       {
+         if (!isValid((*sel)[i]))
+            continue;
+
          mTerrainEditor->getUndoSel()->add((*sel)[i]);
 
          const Point2I& gridPos = (*sel)[i].mGridPoint.gridPos;
@@ -794,15 +808,22 @@ void ThermalErosionAction::process(Selection * sel, const Gui3DMouseEvent &, boo
          // erosion height to properly apply the
          // softness and pressure settings of the brush
          // for this selection.
-         heightDiff = (*sel)[i].mHeight - mNoiseData[gridPos.x + (gridPos.y << shift)];
+         heightDiff = ((*sel)[i].mHeight - mTerrainHeights[(gridPos.x - mSelectionOrigin.x) + ((gridPos.y-mSelectionOrigin.y) << shift)]) * mScale;
 
-         (*sel)[i].mHeight -= (heightDiff * (*sel)[i].mWeight) / maxHeight;
+         (*sel)[i].mHeight += heightDiff * (*sel)[i].mWeight * mTerrainEditor->getBrushPressure();
+
+         if ((*sel)[i].mHeight > mTerrainEditor->mTileMaxHeight)
+            (*sel)[i].mHeight = mTerrainEditor->mTileMaxHeight;
+
+         if ((*sel)[i].mHeight < mTerrainEditor->mTileMinHeight)
+            (*sel)[i].mHeight = mTerrainEditor->mTileMinHeight;
 
          mTerrainEditor->setGridInfo((*sel)[i]);
       }
 
-      mTerrainEditor->gridUpdateComplete();
+      mTerrainEditor->scheduleGridUpdate();
    }
+
 }
 
 void HydraulicErosionAction::process(Selection* sel, const Gui3DMouseEvent&, bool selChanged, Type type)
@@ -826,7 +847,7 @@ void HydraulicErosionAction::process(Selection* sel, const Gui3DMouseEvent&, boo
          for (U32 y = 0; y < size; y++)
          {
             height = fixedToFloat(tblock->getHeight(Point2I(x, y)));
-            mTerrainHeights[x + (y << 8)] = height * mNoiseData[x + (y << 8)];
+            mTerrainHeights[x + (y << shift)] = height * mNoiseData[x + (y << shift)];
 
             if (height > maxHeight)
                maxHeight = height;
