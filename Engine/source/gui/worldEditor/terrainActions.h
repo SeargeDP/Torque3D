@@ -355,7 +355,7 @@ class TerrainScratchPad
 {
 public:
    F32 mBottom, mTop;
-   TerrainScratchPad(): mBottom(FLT_MAX), mTop(F32_MIN){};
+   TerrainScratchPad(): mBottom(F32_MAX), mTop(F32_MIN_EX){};
    ~TerrainScratchPad() { mContents.clear(); };
    void clear();
    class gridStub

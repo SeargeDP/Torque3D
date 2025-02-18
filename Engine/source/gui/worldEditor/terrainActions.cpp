@@ -872,7 +872,7 @@ void TerrainScratchPad::clear()
       delete(mContents[i]);
    mContents.clear();
    mBottom = F32_MAX;
-   mTop = F32_MIN;
+   mTop = F32_MIN_EX;
 }
 
 void copyAction::process(Selection* sel, const Gui3DMouseEvent&, bool selChanged, Type type)
@@ -952,7 +952,7 @@ void pasteDownAction::process(Selection* sel, const Gui3DMouseEvent&, bool selCh
    if (type != Begin)
       return;
 
-   F32 ceiling = F32_MIN;
+   F32 ceiling = F32_MIN_EX;
    for (U32 i = 0; i < sel->size(); i++)
    {
       ceiling = mMax((*sel)[i].mHeight, ceiling);
