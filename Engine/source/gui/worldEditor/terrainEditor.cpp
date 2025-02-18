@@ -716,7 +716,9 @@ TerrainEditor::TerrainEditor() :
    mActions.push_back(new HydraulicErosionAction(this));
    mActions.push_back(new copyAction(this));
    mActions.push_back(new pasteAction(this));
-
+   mActions.push_back(new pasteUpAction(this));
+   mActions.push_back(new pasteDownAction(this));
+   
 
    // set the default action
    mCurrentAction = mActions[0];

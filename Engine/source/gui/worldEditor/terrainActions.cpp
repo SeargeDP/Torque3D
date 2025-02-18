@@ -858,6 +858,23 @@ void HydraulicErosionAction::process(Selection* sel, const Gui3DMouseEvent&, boo
 
 }
 
+void TerrainScratchPad::addTile(F32 height, U8 material)
+{
+   mContents.push_back(new gridStub(height, material));
+
+   mBottom = mMin(height, mBottom);
+   mTop = mMax(height, mTop);
+};
+
+void TerrainScratchPad::clear()
+{
+   for (U32 i = 0; i < mContents.size(); i++)
+      delete(mContents[i]);
+   mContents.clear();
+   mBottom = F32_MAX;
+   mTop = F32_MIN;
+}
+
 void copyAction::process(Selection* sel, const Gui3DMouseEvent&, bool selChanged, Type type)
 {
    gTerrainScratchPad.clear();
@@ -872,12 +889,81 @@ void copyAction::process(Selection* sel, const Gui3DMouseEvent&, bool selChanged
 
 void pasteAction::process(Selection* sel, const Gui3DMouseEvent&, bool selChanged, Type type)
 {
+   if (gTerrainScratchPad.size() == 0)
+      return;
+
+   if (gTerrainScratchPad.size() != sel->size())
+      return;
+
+   if (type != Begin)
+      return;
+
    for (U32 i = 0; i < sel->size(); i++)
    {
       if (isValid((*sel)[i]))
       {
          mTerrainEditor->getUndoSel()->add((*sel)[i]);
          (*sel)[i].mHeight = gTerrainScratchPad[i]->mHeight;
+         (*sel)[i].mMaterial = gTerrainScratchPad[i]->mMaterial;
+         mTerrainEditor->setGridInfo((*sel)[i]);
+      }
+   }
+   mTerrainEditor->scheduleGridUpdate();
+   mTerrainEditor->scheduleMaterialUpdate();
+}
+
+void pasteUpAction::process(Selection* sel, const Gui3DMouseEvent&, bool selChanged, Type type)
+{
+   if (gTerrainScratchPad.size() == 0)
+      return;
+
+   if (gTerrainScratchPad.size() != sel->size())
+      return;
+
+   if (type != Begin)
+      return;
+   F32 floor = F32_MAX;
+   for (U32 i = 0; i < sel->size(); i++)
+   {
+      floor = mMin((*sel)[i].mHeight, floor);
+   }
+   for (U32 i = 0; i < sel->size(); i++)
+   {
+      if (isValid((*sel)[i]))
+      {
+         mTerrainEditor->getUndoSel()->add((*sel)[i]);
+         (*sel)[i].mHeight = gTerrainScratchPad[i]->mHeight - gTerrainScratchPad.mBottom + floor;
+         (*sel)[i].mMaterial = gTerrainScratchPad[i]->mMaterial;
+         mTerrainEditor->setGridInfo((*sel)[i]);
+      }
+   }
+   mTerrainEditor->scheduleGridUpdate();
+   mTerrainEditor->scheduleMaterialUpdate();
+}
+
+void pasteDownAction::process(Selection* sel, const Gui3DMouseEvent&, bool selChanged, Type type)
+{
+   if (gTerrainScratchPad.size() == 0)
+      return;
+
+   if (gTerrainScratchPad.size() != sel->size())
+      return;
+
+   if (type != Begin)
+      return;
+
+   F32 ceiling = F32_MIN;
+   for (U32 i = 0; i < sel->size(); i++)
+   {
+      ceiling = mMax((*sel)[i].mHeight, ceiling);
+   }
+
+   for (U32 i = 0; i < sel->size(); i++)
+   {
+      if (isValid((*sel)[i]))
+      {
+         mTerrainEditor->getUndoSel()->add((*sel)[i]);
+         (*sel)[i].mHeight = gTerrainScratchPad[i]->mHeight - gTerrainScratchPad.mTop + ceiling;
          (*sel)[i].mMaterial = gTerrainScratchPad[i]->mMaterial;
          mTerrainEditor->setGridInfo((*sel)[i]);
       }

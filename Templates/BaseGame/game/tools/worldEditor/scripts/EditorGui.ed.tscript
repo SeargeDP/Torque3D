@@ -1259,6 +1259,8 @@ function EditorGui::SetTerrainPalletBar()
    EWToolsPaletteWindow.addButton("ClearEmpty", "ToolsModule:clearEmpty_n_image", "ETerrainEditor.switchAction( clearEmpty );", "", "Clear Empty", "shift 0"); 
    EWToolsPaletteWindow.addButton("Copy", "ToolsModule:setHeight_n_image", "ETerrainEditor.switchAction( copy );", "", "copy", "ctrl C");
    EWToolsPaletteWindow.addButton("Paste", "ToolsModule:setHeight_n_image", "ETerrainEditor.switchAction( paste );", "", "paste", "ctrl v"); 
+   EWToolsPaletteWindow.addButton("pasteUp", "ToolsModule:setHeight_n_image", "ETerrainEditor.switchAction( pasteUp );", "", "pasteUp", "ctrl b");
+   EWToolsPaletteWindow.addButton("PasteDown", "ToolsModule:setHeight_n_image", "ETerrainEditor.switchAction( pasteDown );", "", "pasteDown", "ctrl n");
    EWToolsPaletteWindow.refresh();
 }
 

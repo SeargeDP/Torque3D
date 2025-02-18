@@ -354,9 +354,10 @@ public:
 class TerrainScratchPad
 {
 public:
-   TerrainScratchPad() {};
+   F32 mBottom, mTop;
+   TerrainScratchPad(): mBottom(FLT_MAX), mTop(F32_MIN){};
    ~TerrainScratchPad() { mContents.clear(); };
-   void clear() { for (U32 i = 0; i < mContents.size(); i++) delete(mContents[i]); mContents.clear(); };
+   void clear();
    class gridStub
    {
    public:
@@ -364,7 +365,8 @@ public:
       F32 mHeight;
       U8 mMaterial;
    };
-   void addTile(F32 height, U8 material) { mContents.push_back(new gridStub(height, material)); };
+   void addTile(F32 height, U8 material);
+   U32 size() { return(mContents.size()); };
    gridStub* operator [](U32 index) { return mContents[index]; };
 private:
    Vector<gridStub*> mContents;
@@ -392,6 +394,27 @@ public:
    void process(Selection* sel, const Gui3DMouseEvent& event, bool selChanged, Type type);
 };
 
+class pasteUpAction : public TerrainAction
+{
+public:
+   pasteUpAction(TerrainEditor* editor)
+      : TerrainAction(editor)
+   {
+   }
+   StringTableEntry getName() { return("pasteUp"); }
+   void process(Selection* sel, const Gui3DMouseEvent& event, bool selChanged, Type type);
+};
+
+class pasteDownAction : public TerrainAction
+{
+public:
+   pasteDownAction(TerrainEditor* editor)
+      : TerrainAction(editor)
+   {
+   }
+   StringTableEntry getName() { return("pasteDown"); }
+   void process(Selection* sel, const Gui3DMouseEvent& event, bool selChanged, Type type);
+};
 
 /// An undo action used to perform terrain wide smoothing.
 class TerrainSmoothAction : public UndoAction
