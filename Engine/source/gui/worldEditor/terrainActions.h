@@ -312,12 +312,8 @@ class ThermalErosionAction : public TerrainAction
       {
          mNoise.setSeed( 1 );//Sim::getCurrentTime() );
          mNoiseData.setSize(mNoiseSize * mNoiseSize);
-         mTerrainHeights.setSize(mNoiseSize * mNoiseSize);
          mNoise.fBm(&mNoiseData, mNoiseSize, 12, 1.0f, 5.0f);
-         //Vector<F32> scratch = mNoiseData;
-         //mNoise.rigidMultiFractal( &mNoiseData, &scratch, TerrainBlock::BlockSize, 12, 1.0f, 5.0f );
          mNoise.getMinMax(&mNoiseData, &mMinMaxNoise.x, &mMinMaxNoise.y, mNoiseSize);
-
          mScale = 1.5f / (mMinMaxNoise.x - mMinMaxNoise.y);
       }
       
@@ -328,9 +324,7 @@ class ThermalErosionAction : public TerrainAction
       const U32 mNoiseSize;
       Noise2D mNoise;
       Vector<F32> mNoiseData;
-      Vector<F32> mTerrainHeights;
       Point2F mMinMaxNoise;
-      Point2I mSelectionOrigin;
       F32 mScale;
 };
 
