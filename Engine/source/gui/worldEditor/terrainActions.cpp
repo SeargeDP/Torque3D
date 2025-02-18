@@ -773,6 +773,7 @@ void ThermalErosionAction::process(Selection * sel, const Gui3DMouseEvent &, boo
    mNoise.getMinMax(&mNoiseData, &mMinMaxNoise.x, &mMinMaxNoise.y, mNoiseSize);
    mScale = 1.5f / (mMinMaxNoise.x - mMinMaxNoise.y + 0.0001);
 
+   F32 selRange = sel->getMaxHeight()-sel->getMinHeight();
    if (selChanged)
    {
       F32 heightDiff = 0;
@@ -787,11 +788,20 @@ void ThermalErosionAction::process(Selection * sel, const Gui3DMouseEvent &, boo
          const Point2I& gridPos = (*sel)[i].mGridPoint.gridPos;
 
          const F32 noiseVal = mNoiseData[(gridPos.x % mNoiseSize) +
-            ((gridPos.y % mNoiseSize) * mNoiseSize)] + mMinMaxNoise.y;
+            ((gridPos.y % mNoiseSize) * mNoiseSize)]/(mMinMaxNoise.y-mMinMaxNoise.x) * selRange + mMinMaxNoise.y;
 
-         heightDiff = (noiseVal * mTerrainEditor->mNoiseFactor - (*sel)[i].mHeight) / tblock->getObjBox().len_z();
+         heightDiff = (noiseVal * mTerrainEditor->mNoiseFactor - (*sel)[i].mHeight) / tblock->getObjBox().len_z() * 2.0;
 
-         (*sel)[i].mHeight += heightDiff * (*sel)[i].mWeight;
+         const F32 squareSize = tblock->getSquareSize();
+         Point2F p;
+         Point3F norm;
+
+         p.x = (*sel)[i].mGridPoint.gridPos.x * squareSize;
+         p.y = (*sel)[i].mGridPoint.gridPos.y * squareSize;
+         tblock->getNormal(p, &norm, true);
+
+         F32 bias = 0.75f-norm.z;
+         (*sel)[i].mHeight += heightDiff * (*sel)[i].mWeight * bias;
 
          if ((*sel)[i].mHeight > mTerrainEditor->mTileMaxHeight)
             (*sel)[i].mHeight = mTerrainEditor->mTileMaxHeight;
@@ -825,6 +835,8 @@ void HydraulicErosionAction::process(Selection* sel, const Gui3DMouseEvent&, boo
    mNoise.getMinMax(&mNoiseData, &mMinMaxNoise.x, &mMinMaxNoise.y, mNoiseSize);
    mScale = 1.5f / (mMinMaxNoise.x - mMinMaxNoise.y + 0.0001);
 
+   F32 selRange = sel->getMaxHeight() - sel->getMinHeight();
+   F32 avg = sel->getAvgHeight();
    if (selChanged)
    {
       F32 heightDiff = 0;
@@ -839,11 +851,12 @@ void HydraulicErosionAction::process(Selection* sel, const Gui3DMouseEvent&, boo
          const Point2I& gridPos = (*sel)[i].mGridPoint.gridPos;
 
          const F32 noiseVal = mNoiseData[(gridPos.x % mNoiseSize) +
-            ((gridPos.y % mNoiseSize) * mNoiseSize)] + mMinMaxNoise.y;
+            ((gridPos.y % mNoiseSize) * mNoiseSize)] / (mMinMaxNoise.y - mMinMaxNoise.x) * selRange + mMinMaxNoise.y;
 
-         heightDiff = (noiseVal * mTerrainEditor->mNoiseFactor - (*sel)[i].mHeight) / tblock->getObjBox().len_z();
+         heightDiff = (noiseVal * mTerrainEditor->mNoiseFactor - (*sel)[i].mHeight) / tblock->getObjBox().len_z() * 2.0;
 
-         (*sel)[i].mHeight += heightDiff * (*sel)[i].mWeight;
+         F32 bias = ((*sel)[i].mHeight - avg)/ selRange;
+         (*sel)[i].mHeight += heightDiff * (*sel)[i].mWeight * bias;
 
          if ((*sel)[i].mHeight > mTerrainEditor->mTileMaxHeight)
             (*sel)[i].mHeight = mTerrainEditor->mTileMaxHeight;
