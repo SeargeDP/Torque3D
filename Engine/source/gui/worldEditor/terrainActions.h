@@ -351,6 +351,47 @@ public:
    F32 mScale;
 };
 
+class TerrainScratchPad
+{
+public:
+   TerrainScratchPad() {};
+   ~TerrainScratchPad() { mContents.clear(); };
+   void clear() { for (U32 i = 0; i < mContents.size(); i++) delete(mContents[i]); mContents.clear(); };
+   class gridStub
+   {
+   public:
+      gridStub(F32 height, U8 material) : mHeight(height), mMaterial(material) {};
+      F32 mHeight;
+      U8 mMaterial;
+   };
+   void addTile(F32 height, U8 material) { mContents.push_back(new gridStub(height, material)); };
+   gridStub* operator [](U32 index) { return mContents[index]; };
+private:
+   Vector<gridStub*> mContents;
+};
+
+class copyAction : public TerrainAction
+{
+public:
+   copyAction(TerrainEditor* editor)
+      : TerrainAction(editor)
+   {
+   }
+   StringTableEntry getName() { return("copy"); }
+   void process(Selection* sel, const Gui3DMouseEvent& event, bool selChanged, Type type);
+};
+
+class pasteAction : public TerrainAction
+{
+public:
+   pasteAction(TerrainEditor* editor)
+      : TerrainAction(editor)
+   {
+   }
+   StringTableEntry getName() { return("paste"); }
+   void process(Selection* sel, const Gui3DMouseEvent& event, bool selChanged, Type type);
+};
+
 
 /// An undo action used to perform terrain wide smoothing.
 class TerrainSmoothAction : public UndoAction

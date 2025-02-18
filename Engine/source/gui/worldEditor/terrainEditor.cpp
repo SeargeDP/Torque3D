@@ -714,6 +714,8 @@ TerrainEditor::TerrainEditor() :
    mActions.push_back(new PaintNoiseAction(this));
    mActions.push_back(new ThermalErosionAction(this));
    mActions.push_back(new HydraulicErosionAction(this));
+   mActions.push_back(new copyAction(this));
+   mActions.push_back(new pasteAction(this));
 
 
    // set the default action

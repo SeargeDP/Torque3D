@@ -26,6 +26,7 @@
 
 #include "gui/core/guiCanvas.h"
 
+TerrainScratchPad gTerrainScratchPad;
 //------------------------------------------------------------------------------
 bool TerrainAction::isValid(GridInfo tile)
 {
@@ -855,6 +856,34 @@ void HydraulicErosionAction::process(Selection* sel, const Gui3DMouseEvent&, boo
       mTerrainEditor->scheduleGridUpdate();
    }
 
+}
+
+void copyAction::process(Selection* sel, const Gui3DMouseEvent&, bool selChanged, Type type)
+{
+   gTerrainScratchPad.clear();
+   for (U32 i=0;i<sel->size();i++)
+   {
+      if (isValid((*sel)[i]))
+         gTerrainScratchPad.addTile((*sel)[i].mHeight, (*sel)[i].mMaterial);
+      else
+         gTerrainScratchPad.addTile(0, 0);
+   }
+}
+
+void pasteAction::process(Selection* sel, const Gui3DMouseEvent&, bool selChanged, Type type)
+{
+   for (U32 i = 0; i < sel->size(); i++)
+   {
+      if (isValid((*sel)[i]))
+      {
+         mTerrainEditor->getUndoSel()->add((*sel)[i]);
+         (*sel)[i].mHeight = gTerrainScratchPad[i]->mHeight;
+         (*sel)[i].mMaterial = gTerrainScratchPad[i]->mMaterial;
+         mTerrainEditor->setGridInfo((*sel)[i]);
+      }
+   }
+   mTerrainEditor->scheduleGridUpdate();
+   mTerrainEditor->scheduleMaterialUpdate();
 }
 
 IMPLEMENT_CONOBJECT( TerrainSmoothAction );
