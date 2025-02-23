@@ -331,6 +331,27 @@ ConsoleSetType( TypeS8 )
 }
 
 //-----------------------------------------------------------------------------
+// TypeS16
+//-----------------------------------------------------------------------------
+ConsoleType(char, TypeS16, S16, "")
+ImplementConsoleTypeCasters(TypeS16, S16)
+
+ConsoleGetType(TypeS16)
+{
+   static const U32 bufSize = 256;
+   char* returnBuffer = Con::getReturnBuffer(bufSize);
+   dSprintf(returnBuffer, bufSize, "%d", *((S16*)dptr));
+   return returnBuffer;
+}
+
+ConsoleSetType(TypeS16)
+{
+   if (argc == 1)
+      *((S16*)dptr) = dAtoi(argv[0]);
+   else
+      Con::printf("(TypeU8) Cannot set multiple args to a single S8.");
+}
+//-----------------------------------------------------------------------------
 // TypeS32
 //-----------------------------------------------------------------------------
 ConsoleType(int, TypeS32, S32, "")

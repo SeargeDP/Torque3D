@@ -275,7 +275,7 @@ void GuiInspectorField::setWordData(const S32& wordIndex, const char* data, bool
          const char* wordData = StringUnit::getUnit(fieldData, wordIndex, " \t\n");
 
          S32 type = mField->type;
-         if (type == TypeS8 || type == TypeS32 || type == TypeF32 || type == TypeS32Vector
+         if (type == TypeS8 || type == TypeS16 || type == TypeS32 || type == TypeF32 || type == TypeS32Vector
             || type == TypeF32Vector
             || type == TypeColorI
             || type == TypeColorF
@@ -323,7 +323,7 @@ void GuiInspectorField::setWordData(const S32& wordIndex, const char* data, bool
          const char* wordData = StringUnit::getUnit(fieldData, wordIndex, " \t\n");
 
          S32 type = mField->type;
-         if (type == TypeS8 || type == TypeS32 || type == TypeF32 || type == TypeS32Vector
+         if (type == TypeS8 || type == TypeS16 || type == TypeS32 || type == TypeF32 || type == TypeS32Vector
             || type == TypeF32Vector
             || type == TypeColorI
             || type == TypeColorF
@@ -396,7 +396,7 @@ void GuiInspectorField::setWordData(const S32& wordIndex, const char* data, bool
          const char* wordData = StringUnit::getUnit(fieldData, wordIndex, " \t\n");
 
          S32 type = mField->type;
-         if (type == TypeS8 || type == TypeS32 || type == TypeF32 || type == TypeS32Vector
+         if (type == TypeS8 || type == TypeS16 || type == TypeS32 || type == TypeF32 || type == TypeS32Vector
             || type == TypeF32Vector
             || type == TypeColorI
             || type == TypeColorF
@@ -544,7 +544,7 @@ void GuiInspectorField::setData( const char* data, bool callbacks )
          String newValue = strData;
          S32 type= mField->type;
          ConsoleValue evaluationResult;
-         if( type == TypeS8 || type == TypeS32 || type == TypeF32 )
+         if( type == TypeS8 || type == TypeS16 || type == TypeS32 || type == TypeF32 )
          {
             char buffer[ 2048 ];
             expandEscape( buffer, newValue );

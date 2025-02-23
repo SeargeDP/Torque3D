@@ -239,7 +239,7 @@ void TSStatic::initPersistFields()
    endGroup("Reflection");
 
    addGroup("Collision");
-   addField("collisionLOD", TypeS32, Offset(mCollisionLOD, TSStatic),
+   addField("collisionLOD", TypeS16, Offset(mCollisionLOD, TSStatic),
       "The level of detail to use for 'Visible Mesh' collision queries.");
    addField("collisionType", TypeTSMeshType, Offset(mCollisionType, TSStatic),
       "The type of mesh data to use for collision queries.");
