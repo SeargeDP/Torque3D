@@ -64,6 +64,7 @@ class SimPersistID;
 DefineConsoleType( TypeBool, bool )
 DefineConsoleType( TypeBoolVector, Vector<bool>)
 DefineConsoleType( TypeS8,  S8 )
+DefineConsoleType( TypeS16, S16)
 DefineConsoleType( TypeS32, S32 )
 DefineConsoleType( TypeS32Vector, Vector<S32> )
 DefineConsoleType( TypeF64, F64 )
