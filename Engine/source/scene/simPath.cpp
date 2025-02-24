@@ -35,6 +35,7 @@
 #include "renderInstance/renderPassManager.h"
 #include "console/engineAPI.h"
 #include "T3D/pathShape.h"
+#include "T3D/physics/physicsShape.h"
 
 #include "T3D/Scene.h"
 
@@ -197,6 +198,12 @@ bool Path::onAdd()
    return true;
 }
 
+void Path::onPostAdd()
+{
+   Parent::onPostAdd();
+   if (isServerObject())
+      updatePath();
+}
 IMPLEMENT_CALLBACK(Path, onAdd, void, (SimObjectId ID), (ID),
 	"Called when this ScriptGroup is added to the system.\n"
 	"@param ID Unique object ID assigned when created (%this in script).\n"
@@ -250,6 +257,42 @@ void Path::updatePath()
    }
 
    gServerPathManager->updatePath(mPathIndex, positions, rotations, times, smoothingTypes, mIsLooping);
+}
+
+void Path::setTransform(const MatrixF& mat)
+{
+   if (isServerObject())
+   {
+      MatrixF newXform = mat;
+      MatrixF oldXform = getTransform();
+      oldXform.affineInverse();
+
+      MatrixF offset;
+      offset.mul(newXform, oldXform);
+
+      // Update all child transforms
+      for (SimSetIterator itr(this); *itr; ++itr)
+      {
+         SceneObject* child = dynamic_cast<SceneObject*>(*itr);
+         if (child)
+         {
+            MatrixF childMat;
+
+            //add the "offset" caused by the parents change, and add it to it's own
+            // This is needed by objects that update their own render transform thru interpolate tick
+            // Mostly for stationary objects.
+            childMat.mul(offset, child->getTransform());
+            child->setTransform(childMat);
+
+            PhysicsShape* childPS = dynamic_cast<PhysicsShape*>(child);
+            if (childPS)
+               childPS->storeRestorePos();
+         }
+      }
+      updatePath();
+   }
+
+   Parent::setTransform(mat);
 }
 
 void Path::addObject(SimObject* obj)
