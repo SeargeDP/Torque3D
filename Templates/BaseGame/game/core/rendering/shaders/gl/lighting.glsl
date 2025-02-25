@@ -226,7 +226,7 @@ float getDistanceAtt( vec3 unormalizedLightVector , float invSqrAttRadius )
 vec3 evaluateStandardBRDF(Surface surface, SurfaceToLight surfaceToLight)
 {
    //diffuse term
-   vec3 Fd = surface.albedo.rgb * surface.ao * M_1OVER_PI_F;
+   vec3 Fd = surface.albedo.rgb * M_1OVER_PI_F;
     
    //GGX specular
    vec3 F = F_Schlick(surface.f0, surface.f90, surfaceToLight.HdotV);
@@ -237,7 +237,7 @@ vec3 evaluateStandardBRDF(Surface surface, SurfaceToLight surfaceToLight)
    if(isCapturing == 1)
       return mix(Fd + Fr, surface.baseColor.rgb, surface.metalness);
    else
-      return Fd + Fr;
+      return Fd + Fr + surface.f0 * surface.ao;
 }
 
 vec3 getDirectionalLight(Surface surface, SurfaceToLight surfaceToLight, vec3 lightColor, float lightIntensity, float shadow)
