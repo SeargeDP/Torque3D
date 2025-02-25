@@ -396,20 +396,18 @@ void dampen(inout Surface surface, TORQUE_SAMPLER2D(WetnessTexture), float accum
 {   
    if (degree<=0.0) return;
    float3 n = abs(surface.N);
-   float ang = dot(float3(0,0,-1),surface.N);
-   float grav = 2.0-pow(ang,3);
-   if (grav<0) grav*=-1.0;
+   float ang = clamp(n.z, 0.04, 0.96);
    
-   float speed = accumTime*(1.0-surface.roughness)*grav;
-   float2 wetoffset = float2(speed,speed/2)*0.1; 
+   float speed = accumTime*(1.0-surface.roughness)*ang;
+   float2 wetoffset = float2(speed,speed/2); 
       
-   float wetness = TORQUE_TEX2D(WetnessTexture, float2(surface.P.xy*0.2+wetoffset)).b; 
-   wetness = lerp(wetness,TORQUE_TEX2D(WetnessTexture,float2(surface.P.zx*0.2+wetoffset)).b,n.y);
-   wetness = lerp(wetness,TORQUE_TEX2D(WetnessTexture,float2(surface.P.zy*0.2+wetoffset)).b,n.x);
-   wetness = pow(wetness,3)*degree;
+   float wetness = TORQUE_TEX2D(WetnessTexture, float2(surface.P.xy*0.1+wetoffset)).b; 
+   wetness = lerp(wetness,TORQUE_TEX2D(WetnessTexture,float2(surface.P.zx*0.1+wetoffset)).b,n.y);
+   wetness = lerp(wetness,TORQUE_TEX2D(WetnessTexture,float2(surface.P.zy*0.1+wetoffset)).b,n.x);
+   wetness = pow(wetness*ang*degree,3);
    
-   surface.roughness = lerp(surface.roughness,(1.0-wetness*surface.roughness)*0.92f+0.04f,ang);
-   surface.baseColor.rgb = lerp(surface.baseColor.rgb*(2.0-wetness),surface.baseColor.rgb,ang*surface.roughness);
+   surface.roughness = lerp(surface.roughness, 0.04f, wetness);
+   surface.baseColor.rgb = lerp(surface.baseColor.rgb, surface.baseColor.rgb*0.96+float3(0.04,0.04,0.04), pow(wetness,5));
    surface.Update(); 
 }
 
