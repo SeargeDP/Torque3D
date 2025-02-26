@@ -348,7 +348,7 @@ void SubScene::load()
       return;
 
    GameMode::findGameModes(mGameModesNames, &mGameModesList);
-   if ((String(mGameModesNames).isNotEmpty() && mGameModesList.size() == 0) || !evaluateCondition())
+   if (!isSelected() && (String(mGameModesNames).isNotEmpty() && mGameModesList.size() == 0) || !evaluateCondition())
    {
       mLoaded = false;
       return;
