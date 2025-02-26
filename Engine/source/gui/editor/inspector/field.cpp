@@ -233,7 +233,7 @@ void GuiInspectorField::setFirstResponder( GuiControl *firstResponder )
 {
    Parent::setFirstResponder( firstResponder );
 
-   if ( firstResponder == this || firstResponder == mEdit )
+   if (( firstResponder == this || firstResponder == mEdit ) && firstResponder->isProperlyAdded())
    {
       mInspector->setHighlightField( this );      
    }   
@@ -851,7 +851,8 @@ void GuiInspectorField::setHLEnabled( bool enabled )
             edit->setCursorPos(0);
          }
       }
-      _executeSelectedCallback();
+      if (isProperlyAdded())
+         _executeSelectedCallback();
    }
 }
 
