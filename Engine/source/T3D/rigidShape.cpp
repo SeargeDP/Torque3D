@@ -1117,7 +1117,7 @@ void RigidShape::updatePos(F32 dt)
       if (mCollisionList.getCount())
       {
          F32 k = mRigid.getKineticEnergy();
-         F32 G = mNetGravity* dt;
+         F32 G = mNetGravity* dt * mDataBlock->integration;
          F32 Kg = 0.5 * mRigid.mass * G * G;
          if (k < sRestTol * Kg && ++restCount > sRestCount)
             mRigid.setAtRest();
@@ -1494,10 +1494,12 @@ void RigidShape::writePacketData(GameConnection *connection, BitStream *stream)
    Parent::writePacketData(connection, stream);
 
    mathWrite(*stream, mRigid.linPosition);
-   mathWrite(*stream, mRigid.angPosition);
-   mathWrite(*stream, mRigid.linMomentum);
-   mathWrite(*stream, mRigid.angMomentum);
-   stream->writeFlag(mRigid.atRest);
+   if (!stream->writeFlag(mRigid.atRest))
+   {
+      mathWrite(*stream, mRigid.angPosition);
+      mathWrite(*stream, mRigid.linMomentum);
+      mathWrite(*stream, mRigid.angMomentum);
+   }
    stream->writeFlag(mContacts.getCount() == 0);
 
    stream->writeFlag(mDisableMove);
@@ -1509,14 +1511,20 @@ void RigidShape::readPacketData(GameConnection *connection, BitStream *stream)
    Parent::readPacketData(connection, stream);
 
    mathRead(*stream, &mRigid.linPosition);
-   mathRead(*stream, &mRigid.angPosition);
-   mathRead(*stream, &mRigid.linMomentum);
-   mathRead(*stream, &mRigid.angMomentum);
-   mRigid.atRest = stream->readFlag();
+   if (stream->readFlag())
+   {
+      mRigid.setAtRest();
+   }
+   else
+   {
+      mathRead(*stream, &mRigid.angPosition);
+      mathRead(*stream, &mRigid.linMomentum);
+      mathRead(*stream, &mRigid.angMomentum);
+      mRigid.updateInertialTensor();
+      mRigid.updateVelocity();
+   }
    if (stream->readFlag())
       mContacts.clear();
-   mRigid.updateInertialTensor();
-   mRigid.updateVelocity();
 
    mDisableMove = stream->readFlag();
    stream->setCompressionPoint(mRigid.linPosition);
@@ -1541,10 +1549,12 @@ U32 RigidShape::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
       stream->writeFlag(mask & ForceMoveMask);
 
       stream->writeCompressedPoint(mRigid.linPosition);
-      mathWrite(*stream, mRigid.angPosition);
-      mathWrite(*stream, mRigid.linMomentum);
-      mathWrite(*stream, mRigid.angMomentum);
-      stream->writeFlag(mRigid.atRest);
+      if (!stream->writeFlag(mRigid.atRest))
+      {
+         mathWrite(*stream, mRigid.angPosition);
+         mathWrite(*stream, mRigid.linMomentum);
+         mathWrite(*stream, mRigid.angMomentum);
+      }
    }
    
    if(stream->writeFlag(mask & FreezeMask))
@@ -1574,11 +1584,18 @@ void RigidShape::unpackUpdate(NetConnection *con, BitStream *stream)
 
       // Read in new position and momentum values
       stream->readCompressedPoint(&mRigid.linPosition);
-      mathRead(*stream, &mRigid.angPosition);
-      mathRead(*stream, &mRigid.linMomentum);
-      mathRead(*stream, &mRigid.angMomentum);
-      mRigid.atRest = stream->readFlag();
-      mRigid.updateVelocity();
+
+      if (stream->readFlag())
+      {
+         mRigid.setAtRest();
+      }
+      else
+      {
+         mathRead(*stream, &mRigid.angPosition);
+         mathRead(*stream, &mRigid.linMomentum);
+         mathRead(*stream, &mRigid.angMomentum);
+         mRigid.updateVelocity();
+      }
 
       if (!forceUpdate && isProperlyAdded()) 
       {

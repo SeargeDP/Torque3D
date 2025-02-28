@@ -807,7 +807,7 @@ void Vehicle::updatePos(F32 dt)
       if (mCollisionList.getCount()) 
       {
          F32 k = mRigid.getKineticEnergy();
-         F32 G = mNetGravity* dt;
+         F32 G = mNetGravity* dt * mDataBlock->integration;
          F32 Kg = 0.5 * mRigid.mass * G * G;
          if (k < sRestTol * Kg && ++restCount > sRestCount)
             mRigid.setAtRest();
@@ -962,10 +962,12 @@ U32 Vehicle::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
    if (stream->writeFlag(mask & PositionMask))
    {
       stream->writeCompressedPoint(mRigid.linPosition);
-      mathWrite(*stream, mRigid.angPosition);
-      mathWrite(*stream, mRigid.linMomentum);
-      mathWrite(*stream, mRigid.angMomentum);
-      stream->writeFlag(mRigid.atRest);
+      if (!stream->writeFlag(mRigid.atRest))
+      {
+         mathWrite(*stream, mRigid.angPosition);
+         mathWrite(*stream, mRigid.linMomentum);
+         mathWrite(*stream, mRigid.angMomentum);
+      }
    }
 
    
@@ -997,11 +999,18 @@ void Vehicle::unpackUpdate(NetConnection *con, BitStream *stream)
 
       // Read in new position and momentum values
       stream->readCompressedPoint(&mRigid.linPosition);
-      mathRead(*stream, &mRigid.angPosition);
-      mathRead(*stream, &mRigid.linMomentum);
-      mathRead(*stream, &mRigid.angMomentum);
-      mRigid.atRest = stream->readFlag();
-      mRigid.updateVelocity();
+
+      if (stream->readFlag())
+      {
+         mRigid.setAtRest();
+      }
+      else
+      {
+         mathRead(*stream, &mRigid.angPosition);
+         mathRead(*stream, &mRigid.linMomentum);
+         mathRead(*stream, &mRigid.angMomentum);
+         mRigid.updateVelocity();
+      }
 
       if (isProperlyAdded()) 
       {
