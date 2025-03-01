@@ -1726,6 +1726,13 @@ void AssetImporter::processMaterialAsset(AssetImportObject* assetItem)
    if (activeImportConfig->UseExistingMaterials)
    {
       //So if the material already exists, we should just use that. So first, let's find out if it already exists
+      if (activeImportConfig->AlwaysAddMaterialSuffix)
+      {
+         StringTableEntry suffix = activeImportConfig->AddedMaterialSuffix.c_str();
+         char buf[1024];
+         dSprintf(buf, sizeof(buf), "%s%s", assetName, suffix);
+         assetName = buf;
+      }
 
       //check to see if the definition for this already exists
       StringTableEntry existingMatAsset = MaterialAsset::getAssetIdByMaterialName(StringTable->insert(assetName));
