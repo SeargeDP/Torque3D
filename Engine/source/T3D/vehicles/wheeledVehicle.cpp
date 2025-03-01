@@ -315,6 +315,7 @@ WheeledVehicleData::WheeledVehicleData()
    dMemset(&wheel, 0, sizeof(wheel));
    for (S32 i = 0; i < MaxSounds; i++)
       INIT_SOUNDASSET_ARRAY(WheeledVehicleSounds, i);
+   mDownForce = 0;
 }
 
 
@@ -477,6 +478,8 @@ void WheeledVehicleData::initPersistFields()
    addField("brakeTorque", TypeF32, Offset(brakeTorque, WheeledVehicleData),
       "@brief Torque applied when braking.\n\n"
       "This controls how fast the vehicle will stop when the brakes are applied." );
+   addField("downforce", TypeF32, Offset(mDownForce, WheeledVehicleData),
+      "downward force based on velocity.");
    endGroup("Steering");
 }
 
@@ -500,6 +503,7 @@ void WheeledVehicleData::packData(BitStream* stream)
    stream->write(engineTorque);
    stream->write(engineBrake);
    stream->write(brakeTorque);
+   stream->write(mDownForce);
 }
 
 void WheeledVehicleData::unpackData(BitStream* stream)
@@ -519,6 +523,7 @@ void WheeledVehicleData::unpackData(BitStream* stream)
    stream->read(&engineTorque);
    stream->read(&engineBrake);
    stream->read(&brakeTorque);
+   stream->read(&mDownForce);
 }
 
 
@@ -920,6 +925,18 @@ void WheeledVehicle::updateForces(F32 dt)
    Wheel* wend = &mWheel[mDataBlock->wheelCount];
    mRigid.clearForces();
 
+   //calculate here so we can stiffen the springs a bit based on
+   //the final amount of downforce
+   //get the speed
+   F32 downForce = mRigid.linVelocity.lenSquared() <= 1 ? 1 : mRigid.linVelocity.lenSquared();
+   //grab the datablock var
+   downForce *= mDataBlock->mDownForce;
+   //make it a smaller number so we can multiply gravity by it
+   downForce = mSqrt(downForce);
+   downForce *= TickSec;
+   //ensure that it is not smaller then one, cause mulltiplying gravity by fractions is baaaad
+   downForce = downForce < 1 ? 1 : downForce;
+
    // Calculate vertical load for friction.  Divide up the spring
    // forces across all the wheels that are in contact with
    // the ground.
@@ -954,6 +971,8 @@ void WheeledVehicle::updateForces(F32 dt)
 
          // Spring force & damping
          F32 spring  = wheel->spring->force * (1 - wheel->extension);
+
+         spring += (spring * downForce);
 
          if (wheel->extension == 0) //spring fully compressed
          {
@@ -1110,7 +1129,7 @@ void WheeledVehicle::updateForces(F32 dt)
    mRigid.force += mAppliedForce;
 
    // Container drag & buoyancy
-   mRigid.force  += Point3F(0, 0, mRigid.mass * mNetGravity);
+   mRigid.force  += Point3F(0, 0, mRigid.mass * mNetGravity * downForce);
    mRigid.force  -= mRigid.linVelocity * mDrag;
    mRigid.torque -= mRigid.angMomentum * mDrag;
 
