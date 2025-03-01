@@ -931,6 +931,34 @@ void GuiInspectorField::_setFieldDocs( StringTableEntry docs )
       else
          mFieldDocs = docs;
    }
+
+   String inDocs(docs);
+   String outDocs("");
+   String outLine("");
+   S32 newline = inDocs.find('\n');
+   if (newline == -1)
+      outDocs = docs;
+   else
+   {
+      U32 uCount = StringUnit::getUnitCount(inDocs, " ");
+      for (U32 i = 0; i < uCount; i++)
+      {
+         String docWord = StringUnit::getUnit(inDocs, i, " ");
+         if (!docWord.isEmpty())
+            outLine += docWord;
+
+         if (outLine.length() > 80)
+         {
+            outLine += "\n";
+            outDocs += outLine;
+            outLine.clear();
+         }
+         else
+            outLine += " ";
+      }
+   }
+   outDocs += String("\n") + outLine;
+   mTooltip = outDocs;
 }
 
 void GuiInspectorField::setHeightOverride(bool useOverride, U32 heightOverride)
