@@ -1648,6 +1648,7 @@ void RigidShape::unpackUpdate(NetConnection *con, BitStream *stream)
          mDelta.warpCount = mDelta.warpTicks = 0;
          setPosition(mRigid.linPosition, mRigid.angPosition);
       }
+      mRigid.updateCenterOfMass();
    }
    
    if(stream->readFlag())

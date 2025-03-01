@@ -959,18 +959,6 @@ U32 Vehicle::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
    stream->writeFloat(pitch,9);
    mDelta.move.pack(stream);
 
-   if (stream->writeFlag(mask & PositionMask))
-   {
-      stream->writeCompressedPoint(mRigid.linPosition);
-      if (!stream->writeFlag(mRigid.atRest))
-      {
-         mathWrite(*stream, mRigid.angPosition);
-         mathWrite(*stream, mRigid.linMomentum);
-         mathWrite(*stream, mRigid.angMomentum);
-      }
-   }
-
-   
    stream->writeFloat(mClampF(getEnergyValue(), 0.f, 1.f), 8);
 
    return retMask;
@@ -990,80 +978,6 @@ void Vehicle::unpackUpdate(NetConnection *con, BitStream *stream)
    mSteering.x = (2 * yaw * mDataBlock->maxSteeringAngle) - mDataBlock->maxSteeringAngle;
    mSteering.y = (2 * pitch * mDataBlock->maxSteeringAngle) - mDataBlock->maxSteeringAngle;
    mDelta.move.unpack(stream);
-
-   if (stream->readFlag()) 
-   {
-      mPredictionCount = sMaxPredictionTicks;
-      F32 speed = mRigid.linVelocity.len();
-      mDelta.warpRot[0] = mRigid.angPosition;
-
-      // Read in new position and momentum values
-      stream->readCompressedPoint(&mRigid.linPosition);
-
-      if (stream->readFlag())
-      {
-         mRigid.setAtRest();
-      }
-      else
-      {
-         mathRead(*stream, &mRigid.angPosition);
-         mathRead(*stream, &mRigid.linMomentum);
-         mathRead(*stream, &mRigid.angMomentum);
-         mRigid.updateVelocity();
-      }
-
-      if (isProperlyAdded()) 
-      {
-         // Determine number of ticks to warp based on the average
-         // of the client and server velocities.
-         Point3F cp = mDelta.pos + mDelta.posVec * mDelta.dt;
-         mDelta.warpOffset = mRigid.linPosition - cp;
-
-         // Calc the distance covered in one tick as the average of
-         // the old speed and the new speed from the server.
-         F32 dt,as = (speed + mRigid.linVelocity.len()) * 0.5 * TickSec;
-
-         // Cal how many ticks it will take to cover the warp offset.
-         // If it's less than what's left in the current tick, we'll just
-         // warp in the remaining time.
-         if (!as || (dt = mDelta.warpOffset.len() / as) > sMaxWarpTicks)
-            dt = mDelta.dt + sMaxWarpTicks;
-         else
-            dt = (dt <= mDelta.dt)? mDelta.dt : mCeil(dt - mDelta.dt) + mDelta.dt;
-
-         // Adjust current frame interpolation
-         if (mDelta.dt) {
-            mDelta.pos = cp + (mDelta.warpOffset * (mDelta.dt / dt));
-            mDelta.posVec = (cp - mDelta.pos) / mDelta.dt;
-            QuatF cr;
-            cr.interpolate(mDelta.rot[1],mDelta.rot[0],mDelta.dt);
-            mDelta.rot[1].interpolate(cr,mRigid.angPosition,mDelta.dt / dt);
-            mDelta.rot[0].extrapolate(mDelta.rot[1],cr,mDelta.dt);
-         }
-
-         // Calculated multi-tick warp
-         mDelta.warpCount = 0;
-         mDelta.warpTicks = (S32)(mFloor(dt));
-         if (mDelta.warpTicks) 
-         {
-            mDelta.warpOffset = mRigid.linPosition - mDelta.pos;
-            mDelta.warpOffset /= (F32)mDelta.warpTicks;
-            mDelta.warpRot[0] = mDelta.rot[1];
-            mDelta.warpRot[1] = mRigid.angPosition;
-         }
-      }
-      else 
-      {
-         // Set the vehicle to the server position
-         mDelta.dt  = 0;
-         mDelta.pos = mRigid.linPosition;
-         mDelta.posVec.set(0,0,0);
-         mDelta.rot[1] = mDelta.rot[0] = mRigid.angPosition;
-         mDelta.warpCount = mDelta.warpTicks = 0;
-         setPosition(mRigid.linPosition, mRigid.angPosition);
-      }
-      mRigid.updateCenterOfMass();
-   }
 
    setEnergyLevel(stream->readFloat(8) * mDataBlock->maxEnergy);
 }
