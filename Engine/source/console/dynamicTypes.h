@@ -214,13 +214,34 @@ class BitfieldConsoleBaseType : public ConsoleBaseType
          
    public:
 
-      const char* getData( void* dptr, const EnumTable*, BitSet32 ) override
+      const char* getData(void* dptr, const EnumTable* tbl, BitSet32) override
       {
-         static const U32 bufSize = 256;
-         char* returnBuffer = Con::getReturnBuffer(bufSize);
-         dSprintf(returnBuffer, bufSize, "%i", *((S32 *) dptr) );
-         return returnBuffer;
+         BitSet32 dptrVal = BitSet32(*(U32*)dptr);
+         String returnBuffer;
+         if (!tbl) tbl = getEnumTable();
+
+         const U32 numEnums = tbl->getNumValues();
+         bool first = true;
+
+         for (U32 i = 0; i < numEnums; i++)
+         {
+            if (dptrVal.test(BIT(i)))
+            {
+               if (first)
+               {
+                  returnBuffer = String::ToString("%s",(*tbl)[i].getName());
+               }
+               else
+               {
+                  returnBuffer += String::ToString(" | %s", (*tbl)[i].getName());
+               }
+               first = false;
+            }
+         }
+
+         return Con::getReturnBuffer(returnBuffer);
       }
+
       void setData( void* dptr, S32 argc, const char** argv, const EnumTable*, BitSet32 ) override
       {
          if( argc != 1 ) return; \

@@ -71,13 +71,12 @@ ConsoleDocClass(Material,
 ImplementBitfieldType(MaterialAnimType,
    "The type of animation effect to apply to this material.\n"
    "@ingroup GFX\n\n")
-{
-   Material::Scroll, "Scroll", "Scroll the material along the X/Y axis.\n"
-},
-{ Material::Rotate, "Rotate" , "Rotate the material around a point.\n" },
-{ Material::Wave, "Wave" , "Warps the material with an animation using Sin, Triangle or Square mathematics.\n" },
-{ Material::Scale, "Scale", "Scales the material larger and smaller with a pulsing effect.\n" },
-{ Material::Sequence, "Sequence", "Enables the material to have multiple frames of animation in its imagemap.\n" }
+{ Material::No, "$No", "No animations.\n"},
+{ Material::Scroll, "$Scroll", "Scroll the material along the X/Y axis.\n"},
+{ Material::Rotate, "$Rotate" , "Rotate the material around a point.\n" },
+{ Material::Wave, "$Wave" , "Warps the material with an animation using Sin, Triangle or Square mathematics.\n" },
+{ Material::Scale, "$Scale", "Scales the material larger and smaller with a pulsing effect.\n" },
+{ Material::Sequence, "$Sequence", "Enables the material to have multiple frames of animation in its imagemap.\n" }
 EndImplementBitfieldType;
 
 ImplementEnumType(MaterialBlendOp,
