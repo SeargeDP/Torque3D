@@ -1525,16 +1525,24 @@ void GuiInspectorTypeBitMask32::setValue( StringTableEntry value )
    if (mask == 0 && mask != -1) //zero we need to double check. -1 we know is all on
    {
       BitSet32 bitMask;
-      const EnumTable* tbl = mInspector->getInspectObject(0)->getClassRep()->getEnumTable();
-      if (tbl)
+      const EngineEnumTable* table = mField->table;
+      if (!table)
       {
-         const U32 numEnums = tbl->getNumValues();
+         ConsoleBaseType* type = ConsoleBaseType::getType(mField->type);
+         if (type && type->getEnumTable())
+            table = type->getEnumTable();
+      }
+
+      if (table)
+      {
+         const EngineEnumTable& t = *table;
+         const U32 numEntries = t.getNumValues();
          String inString(value);
 
-         for (U32 i = 0; i < numEnums; i++)
+         for (U32 i = 0; i < numEntries; i++)
          {
-            if (inString.find((*tbl)[i].getName()) != String::NPos)
-               bitMask.set(BIT(i));
+            if (inString.find(t[i].getName()) != String::NPos)
+               bitMask.set(t[i].getInt());
          }
          mask = bitMask.getMask();
       }
