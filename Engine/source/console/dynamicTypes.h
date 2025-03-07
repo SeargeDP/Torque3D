@@ -223,6 +223,15 @@ class BitfieldConsoleBaseType : public ConsoleBaseType
          const U32 numEnums = tbl->getNumValues();
          bool first = true;
 
+         if (dptrVal.testStrict(-1)) //test for all
+         {
+            return Con::getReturnBuffer("-1");
+         }
+         else if (!dptrVal.test(-1)) //test for none
+         {
+            return Con::getReturnBuffer("0");
+         }
+
          for (U32 i = 0; i < numEnums; i++)
          {
             if (dptrVal.test(BIT(i)))
@@ -242,10 +251,25 @@ class BitfieldConsoleBaseType : public ConsoleBaseType
          return Con::getReturnBuffer(returnBuffer);
       }
 
-      void setData( void* dptr, S32 argc, const char** argv, const EnumTable*, BitSet32 ) override
+      void setData( void* dptr, S32 argc, const char** argv, const EnumTable* tbl, BitSet32 ) override
       {
-         if( argc != 1 ) return; \
-         *((S32 *) dptr) = dAtoui(argv[0]); \
+         if( argc != 1 ) return;
+         S32 retVal = dAtoui(argv[0]);
+         if (retVal == 0 && retVal != -1) //zero we need to double check. -1 we know is all on
+         {
+            BitSet32 mask;
+            if (!tbl) tbl = getEnumTable();
+            const U32 numEnums = tbl->getNumValues();
+            String inString(argv[0]);
+
+            for (U32 i = 0; i < numEnums; i++)
+            {
+               if (inString.find((*tbl)[i].getName()) != String::NPos)
+                  mask.set(BIT(i));
+            }
+            retVal = mask;
+         }
+         *((S32*)dptr) = retVal;
       }
 };
 

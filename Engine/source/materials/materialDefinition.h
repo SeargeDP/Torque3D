@@ -115,7 +115,6 @@ public:
 
    enum AnimType
    {
-      No = 0,
       Scroll = BIT(0),
       Rotate = BIT(1),
       Wave = BIT(2),
