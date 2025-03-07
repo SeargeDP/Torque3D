@@ -1522,6 +1522,24 @@ void GuiInspectorTypeBitMask32::setValue( StringTableEntry value )
 {
    U32 mask = dAtoui( value );
 
+   if (mask == 0 && mask != -1) //zero we need to double check. -1 we know is all on
+   {
+      BitSet32 bitMask;
+      const EnumTable* tbl = mInspector->getInspectObject(0)->getClassRep()->getEnumTable();
+      if (tbl)
+      {
+         const U32 numEnums = tbl->getNumValues();
+         String inString(value);
+
+         for (U32 i = 0; i < numEnums; i++)
+         {
+            if (inString.find((*tbl)[i].getName()) != String::NPos)
+               bitMask.set(BIT(i));
+         }
+         mask = bitMask.getMask();
+      }
+   }
+
    for ( U32 i = 0; i < mArrayCtrl->size(); i++ )
    {
       GuiCheckBoxCtrl *pCheckBox = dynamic_cast<GuiCheckBoxCtrl*>( mArrayCtrl->at(i) );

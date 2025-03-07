@@ -267,7 +267,7 @@ class BitfieldConsoleBaseType : public ConsoleBaseType
                if (inString.find((*tbl)[i].getName()) != String::NPos)
                   mask.set(BIT(i));
             }
-            retVal = mask;
+            retVal = mask.getMask();
          }
          *((S32*)dptr) = retVal;
       }
