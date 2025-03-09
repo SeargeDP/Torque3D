@@ -30,25 +30,6 @@
 #include "gfx/primBuilder.h"
 #include "gfx/gfxDrawUtil.h"
 #include "console/typeValidators.h"
-
-/// @name Common colors we use
-/// @{
-LinearColorF colorWhite(1.,1.,1.);
-LinearColorF colorWhiteBlend(1.,1.,1.,.75);
-LinearColorF colorBlack(.0,.0,.0);
-LinearColorF colorAlpha(0.0f, 0.0f, 0.0f, 0.0f);
-LinearColorF colorAlphaW(1.0f, 1.0f, 1.0f, 0.0f);
-
-ColorI GuiColorPickerCtrl::mColorRange[7] = {
-   ColorI(255,0,0),     // Red
-   ColorI(255,0,255),   // Pink
-   ColorI(0,0,255),     // Blue
-   ColorI(0,255,255),   // Light blue
-   ColorI(0,255,0),     // Green
-   ColorI(255,255,0),   // Yellow
-   ColorI(255,0,0),     // Red
-};
-/// @}
 #include "postFx/postEffectManager.h"
 #include "gfx/screenshot.h"
 
@@ -111,8 +92,6 @@ void GuiColorPickerCtrl::initPersistFields()
 {
    docsURL;
    addGroup("ColorPicker");
-      addField("baseColor", TypeColorF, Offset(mBaseColor, GuiColorPickerCtrl));
-      addField("pickColor", TypeColorF, Offset(mPickColor, GuiColorPickerCtrl));
       addFieldV("selectorGap", TypeRangedS32,  Offset(mSelectorGap, GuiColorPickerCtrl),&CommonValidators::NaturalNumber);
       addField("displayMode", TYPEID< PickMode >(), Offset(mDisplayMode, GuiColorPickerCtrl) );
       addField("selectorMode", TYPEID< SelectorMode >(), Offset(mSelectorMode, GuiColorPickerCtrl) );
