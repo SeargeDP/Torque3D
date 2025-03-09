@@ -43,6 +43,7 @@
 #include "T3D/gameFunctions.h"
 #include "postFx/postEffect.h"
 #include "math/util/matrixSet.h"
+#include "console/typeValidators.h"
 
 extern ColorI gCanvasClearColor;
 
@@ -121,10 +122,10 @@ void WaterPlane::initPersistFields()
    docsURL;
    addGroup( "WaterPlane" );     
 
-      addProtectedField( "gridSize", TypeS32, Offset( mGridSize, WaterPlane ), &protectedSetGridSize, &defaultProtectedGetFn,
+      addProtectedFieldV( "gridSize", TypeRangedF32, Offset( mGridSize, WaterPlane ), &protectedSetGridSize, &defaultProtectedGetFn, &CommonValidators::PositiveNonZeroFloat,
 		  "Spacing between vertices in the WaterBlock mesh" );
 
-      addProtectedField( "gridElementSize", TypeF32, Offset( mGridElementSize, WaterPlane ), &protectedSetGridElementSize, &defaultProtectedGetFn,
+      addProtectedFieldV( "gridElementSize", TypeRangedF32, Offset( mGridElementSize, WaterPlane ), &protectedSetGridElementSize, &defaultProtectedGetFn, &CommonValidators::PositiveNonZeroFloat,
 		  "Duplicate of gridElementSize for backwards compatility");
 
    endGroup( "WaterPlane" );
