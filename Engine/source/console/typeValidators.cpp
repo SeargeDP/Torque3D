@@ -52,7 +52,7 @@ void FRangeValidator::validateType(SimObject *object, void *typePtr)
    F32 *v = (F32 *) typePtr;
    if(*v < minV || *v > maxV)
    {
-      consoleError(object, "Must be between %g and %g", minV, maxV);
+      consoleError(object, "=(%g). Must be between %g and %g", *v, minV, maxV);
       if(*v < minV)
          *v = minV;
       else if(*v > maxV)
@@ -65,7 +65,7 @@ void IRangeValidator::validateType(SimObject *object, void *typePtr)
    S32 *v = (S32 *) typePtr;
    if(*v < minV || *v > maxV)
    {
-      consoleError(object, "Must be between %d and %d", minV, maxV);
+      consoleError(object, "=(%d). Must be between %d and %d", *v, minV, maxV);
       if(*v < minV)
          *v = minV;
       else if(*v > maxV)
@@ -79,7 +79,7 @@ void IRangeValidatorScaled::validateType(SimObject *object, void *typePtr)
    *v /= factor;
    if(*v < minV || *v > maxV)
    {
-      consoleError(object, "Scaled value must be between %d and %d", minV, maxV);
+      consoleError(object, "=(%d). Scaled value must be between %d and %d", *v, minV, maxV);
       if(*v < minV)
          *v = minV;
       else if(*v > maxV)
@@ -93,7 +93,7 @@ void Point3NormalizeValidator::validateType(SimObject *object, void *typePtr)
    const F32 len = v->len();
    if(!mIsEqual(len, 1.0f))
    {
-      consoleError(object, "Vector length must be %g", length);
+      consoleError(object, "=(%g). Vector length must be %g", len, length);
       *v *= length / len;
    }
 }
