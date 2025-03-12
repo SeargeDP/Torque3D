@@ -122,10 +122,10 @@ void WaterPlane::initPersistFields()
    docsURL;
    addGroup( "WaterPlane" );     
 
-      addProtectedFieldV( "gridSize", TypeRangedF32, Offset( mGridSize, WaterPlane ), &protectedSetGridSize, &defaultProtectedGetFn, &CommonValidators::PositiveNonZeroFloat,
+      addProtectedFieldV( "gridSize", TypeRangedS32, Offset( mGridSize, WaterPlane ), &protectedSetGridSize, &defaultProtectedGetFn, &CommonValidators::NaturalNumber,
 		  "Spacing between vertices in the WaterBlock mesh" );
 
-      addProtectedFieldV( "gridElementSize", TypeRangedF32, Offset( mGridElementSize, WaterPlane ), &protectedSetGridElementSize, &defaultProtectedGetFn, &CommonValidators::PositiveNonZeroFloat,
+      addProtectedFieldV( "gridElementSize", TypeRangedS32, Offset( mGridElementSize, WaterPlane ), &protectedSetGridElementSize, &defaultProtectedGetFn, &CommonValidators::NaturalNumber,
 		  "Duplicate of gridElementSize for backwards compatility");
 
    endGroup( "WaterPlane" );
